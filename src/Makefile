@@ -1,6 +1,17 @@
-CLASS_PATH=./class
+MAIN_CLASS=Game
+OUTPUT_DIR=./class
 COMPILE_FLAGS=-Werror
 
-compile:
-	javac $(COMPILE_FLAGS) *.java
+compile: $(OUTPUT_DIR)/$(MAIN_CLASS).class
 
+$(OUTPUT_DIR)/$(MAIN_CLASS).class: $(OUTPUT_DIR)
+	javac $(COMPILE_FLAGS) -d $(OUTPUT_DIR) *.java
+
+$(OUTPUT_DIR):
+	mkdir $(OUTPUT_DIR)
+
+run: $(OUTPUT_DIR)/$(MAIN_CLASS).class
+	cd $(OUTPUT_DIR); java $(MAIN_CLASS)
+
+clean:
+	rm -rf $(OUTPUT_DIR)
