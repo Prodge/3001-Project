@@ -1,4 +1,4 @@
-# resistanceAI
+# CITS3001-Project
 AI agent for the card game resistance.
 
 # Description
