@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "########### ############ ############"
+clear;
+time make run
