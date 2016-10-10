@@ -1,3 +1,7 @@
+*.swp
+*.swo
+src/class
+
 *.class
 
 # Mobile Tools for Java (J2ME)
