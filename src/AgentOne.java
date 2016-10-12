@@ -1,11 +1,11 @@
 
-public class RandomAgent implements Agent{
+public class AgentOne implements Agent{
 
   private String name;
   private String players;
   private boolean spy;
 
-  public RandomAgent(){
+  public AgentOne(){
   }
 
   /**
