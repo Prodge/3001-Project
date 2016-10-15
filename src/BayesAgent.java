@@ -6,7 +6,7 @@ public class BayesAgent implements Agent{
 
     // State variables
     private boolean spy;
-    private int next_mission;
+    private int current_mission;
     private int total_failures;
     private int mission_traitors;
     private String name;
@@ -16,7 +16,13 @@ public class BayesAgent implements Agent{
     private ArrayList<String> all_mission_players;
     private ArrayList<String> current_mission_players;
     private ArrayList<String> previous_mission_votes;
+
+    // History
     private AccusationList accusations;
+    private ArrayList<ArrayList<String>> mission_vote_list;
+    private ArrayList<ArrayList<String>> proposed_players_list;
+    private ArrayList<ArrayList<String>> players_mission_list;
+    private ArrayList<Integer> traitors_list;
 
     public BayesAgent(){
         accusations = new AccusationList();
@@ -25,6 +31,10 @@ public class BayesAgent implements Agent{
         all_mission_players = new ArrayList<String>();
         current_mission_players = new ArrayList<String>();
         previous_mission_votes = new ArrayList<String>();
+
+        mission_vote_list = new ArrayList<ArrayList<String>>();
+        players_mission_list  = new ArrayList<ArrayList<String>>();
+        traitors_list = new ArrayList<Integer>();
     }
 
     /**
@@ -39,9 +49,11 @@ public class BayesAgent implements Agent{
         this.name = name;
         this.players = new ArrayList<String>(Arrays.asList(players.split(string_delimenator)));
         spy = spies.indexOf(name) != -1; // Checking if we are a spy
+        spies = spy ? spies : "";
         spy_list = new ArrayList<String>(Arrays.asList(spies.split(string_delimenator)));
-        next_mission = mission;
+        current_mission = mission - 1;
         total_failures = failures;
+        proposed_players_list = new ArrayList<ArrayList<String>>();
     }
 
     private String get_lowest_key(HashMap<String, Integer> map){
@@ -99,6 +111,14 @@ public class BayesAgent implements Agent{
     public void get_ProposedMission(String leader, String mission){
         current_leader = leader;
         all_mission_players = new ArrayList<String>(Arrays.asList(mission.split(string_delimenator)));
+        proposed_players_list.add(all_mission_players);
+    }
+
+    private boolean spy_in_team(ArrayList<String> team){
+        for (String player : spy_list){
+            if (team.contains(player)) return true;
+        }
+        return false;
     }
 
     /**
@@ -106,8 +126,21 @@ public class BayesAgent implements Agent{
      * @return true, if the agent votes for the mission, false, if they vote against it.
      * */
     public boolean do_Vote(){
-        //TODO
-        return true;
+        if (spy){
+            // Taking a risk since the game could finish
+            if (total_failures == 2) return true;
+            // Last mission voting up since the resistance would
+            if (current_mission == 5) return false;
+            // Vote up for a mission with a spy
+            if (spy_in_team(all_mission_players)) return true;
+            // Voting strongly about this team because it's size 3
+            if (all_mission_players.size() == 3) return all_mission_players.contains(name);
+        }
+        // Approving my own mission selection
+        if (current_leader == name) return true;
+        // Voting last mission to avoid failure
+        if (current_mission == 5) return true;
+        return false;
     }
 
     /**
@@ -116,6 +149,7 @@ public class BayesAgent implements Agent{
      **/
     public void get_Votes(String yays){
         previous_mission_votes = new ArrayList<String>(Arrays.asList(yays.split(string_delimenator)));
+        mission_vote_list.add(previous_mission_votes);
     }
 
     /**
@@ -125,6 +159,7 @@ public class BayesAgent implements Agent{
      **/
     public void get_Mission(String mission){
         current_mission_players = new ArrayList<String>(Arrays.asList(mission.split(string_delimenator)));
+        players_mission_list.add(current_mission_players);
     }
 
     /**
@@ -141,6 +176,7 @@ public class BayesAgent implements Agent{
      * @param traitors the number of people on the mission who chose to betray (0 for success, greater than 0 for failure)
      **/
     public void get_Traitors(int traitors){
+        traitors_list.add(traitors);
         mission_traitors = traitors;
     }
 
