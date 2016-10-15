@@ -26,7 +26,7 @@ public class RandomAgent implements Agent{
    * Reports the current status, inlcuding players name, the name of all players, the names of the spies (if known), the mission number and the number of failed missions
    * @param name a string consisting of a single letter, the agent's names.
    * @param players a string consisting of one letter for everyone in the game.
-   * @param spies a String consisting of the latter name of each spy, if the agent is a spy, or n questions marks where n is the number of spies allocated; this should be sufficient for the agent to determine if they are a spy or not. 
+   * @param spies a String consisting of the latter name of each spy, if the agent is a spy, or n questions marks where n is the number of spies allocated; this should be sufficient for the agent to determine if they are a spy or not.
    * @param mission the next mission to be launched
    * @param failures the number of failed missions
    * */
@@ -35,10 +35,10 @@ public class RandomAgent implements Agent{
     this.players = players;
     spy = spies.indexOf(name)!=-1;
   }
-  
+
   /**
    * Nominates a group of agents to go on a mission.
-   * If the String does not correspond to a legitimate mission (<i>number</i> of distinct agents, in a String), 
+   * If the String does not correspond to a legitimate mission (<i>number</i> of distinct agents, in a String),
    * a default nomination of the first <i>number</i> agents (in alphabetical order) will be used, as if this was what the agent nominated.
    * @param number the number of agents to be sent on the mission
    * @return a String containing the names of all the agents in a mission
@@ -58,7 +58,7 @@ public class RandomAgent implements Agent{
   /**
    * Provides information of a given mission.
    * @param leader the leader who proposed the mission
-   * @param mission a String containing the names of all the agents in the mission 
+   * @param mission a String containing the names of all the agents in the mission
    **/
   public void get_ProposedMission(String leader, String mission){}
 
@@ -99,11 +99,11 @@ public class RandomAgent implements Agent{
 
 
   /**
-   * Optional method to accuse other Agents of being spies. 
-   * Default action should return the empty String. 
+   * Optional method to accuse other Agents of being spies.
+   * Default action should return the empty String.
    * Convention suggests that this method only return a non-empty string when the accuser is sure that the accused is a spy.
    * Of course convention can be ignored.
-   * @return a string containing the name of each accused agent. 
+   * @return a string containing the name of each accused agent.
    * */
   public String do_Accuse(){
     int number = random.nextInt(players.length());

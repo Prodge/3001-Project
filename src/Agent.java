@@ -16,16 +16,16 @@ public interface Agent{
    * Reports the current status, inlcuding players name, the name of all players, the names of the spies (if known), the mission number and the number of failed missions
    * @param name a string consisting of a single letter, the agent's names.
    * @param players a string consisting of one letter for everyone in the game.
-   * @param spies a String consisting of the latter name of each spy, if the agent is a spy, or n questions marks where n is the number of spies allocated; this should be sufficient for the agent to determine if they are a spy or not. 
+   * @param spies a String consisting of the latter name of each spy, if the agent is a spy, or n questions marks where n is the number of spies allocated; this should be sufficient for the agent to determine if they are a spy or not.
    * @param mission the next mission to be launched
    * @param failures the number of failed missions
    * @return within 100ms
    * */
   public void get_status(String name, String players, String spies, int mission, int failures);
-  
+
   /**
    * Nominates a group of agents to go on a mission.
-   * If the String does not correspond to a legitimate mission (<i>number</i> of distinct agents, in a String), 
+   * If the String does not correspond to a legitimate mission (<i>number</i> of distinct agents, in a String),
    * a default nomination of the first <i>number</i> agents (in alphabetical order) will be reported, as if this was what the agent nominated.
    * @param number the number of agents to be sent on the mission
    * @return a String containing the names of all the agents in a mission, within 1sec
@@ -50,7 +50,7 @@ public interface Agent{
    * @param yays the names of the agents who voted for the mission
    * @return within 100ms
    **/
-  public void get_Votes(String yays); 
+  public void get_Votes(String yays);
 
   /**
    * Reports the agents being sent on a mission.
@@ -75,11 +75,11 @@ public interface Agent{
 
 
   /**
-   * Optional method to accuse other Agents of being spies. 
-   * Default action should return the empty String. 
+   * Optional method to accuse other Agents of being spies.
+   * Default action should return the empty String.
    * Convention suggests that this method only return a non-empty string when the accuser is sure that the accused is a spy.
    * Of course convention can be ignored.
-   * @return a string containing the name of each accused agent, within 1 sec 
+   * @return a string containing the name of each accused agent, within 1 sec
    * */
   public String do_Accuse();
 
