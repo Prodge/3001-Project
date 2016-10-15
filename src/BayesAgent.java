@@ -122,8 +122,10 @@ public class BayesAgent implements Agent{
      * @return true if agent betrays, false otherwise
      **/
     public boolean do_Betray(){
-        //TODO
-        return true;
+        // Linear increase of probably of betrayal throughout the game
+        // We want to betray the mission if we are a spy BUT earlier in the game it is more risky to do so
+        int num_missions = 5;
+        return spy && (next_mission / num_missions) > Math.random();
     }
 
     /**
