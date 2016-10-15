@@ -3,19 +3,17 @@ import java.util.*;
 public class AccusationList{
 
     private ArrayList<Accusation> accusation_list;
-    private String last_accuser;
-    private String[] last_accused_people;
 
     public AccusationList(){
         accusation_list = new ArrayList<Accusation>();
     }
 
     public String get_recent_accuser(){
-        return last_accuser;
+        return accusation_list.get(accusation_list.size() - 1).accuser;
     }
 
-    public String[] get_recent_accused(){
-        return last_accused_people;
+    public ArrayList<String> get_recent_accused(){
+        return accusation_list.get(accusation_list.size() - 1).accused;
     }
 
     public int get_total_accusations(){
@@ -32,7 +30,7 @@ public class AccusationList{
         return accusation_map;
     }
 
-    public ArrayList<String> get_non_accused(String[] players){
+    public ArrayList<String> get_non_accused(ArrayList<String> players){
         ArrayList<String> non_accused = new ArrayList<String>();
         HashMap<String, Integer> accusation_map = get_accusation_map();
         for(String player : players){
@@ -44,7 +42,7 @@ public class AccusationList{
     }
 
     public void add_accusation(String accuser, String accused, String string_delimenator){
-        accusation_list.add(new Accusation(accuser, accused.split(string_delimenator)));
+        accusation_list.add(new Accusation(accuser, new ArrayList<String>(Arrays.asList(accused.split(string_delimenator)))));
     }
 
 }
@@ -52,9 +50,9 @@ public class AccusationList{
 class Accusation{
 
     public final String accuser;
-    public final String[] accused;
+    public final ArrayList<String> accused;
 
-    public Accusation(String accuser, String[] accused) {
+    public Accusation(String accuser, ArrayList<String> accused) {
         this.accuser = accuser;
         this.accused = accused;
     }

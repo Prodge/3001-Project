@@ -1,21 +1,30 @@
 import java.util.*;
 
 public class BayesAgent implements Agent{
+    // Constants
     private static final String string_delimenator = ";";
-    private String name;
-    private String[] players;
+
+    // State variables
     private boolean spy;
     private int next_mission;
     private int total_failures;
-    private String current_leader;
-    private String[] all_mission_players;
-    private String[] current_mission_players;
-    private String[] previous_mission_votes;
     private int mission_traitors;
+    private String name;
+    private String current_leader;
+    private ArrayList<String> players;
+    private ArrayList<String> spy_list;
+    private ArrayList<String> all_mission_players;
+    private ArrayList<String> current_mission_players;
+    private ArrayList<String> previous_mission_votes;
     private AccusationList accusations;
 
     public BayesAgent(){
         accusations = new AccusationList();
+        players = new ArrayList<String>();
+        spy_list = new ArrayList<String>();
+        all_mission_players = new ArrayList<String>();
+        current_mission_players = new ArrayList<String>();
+        previous_mission_votes = new ArrayList<String>();
     }
 
     /**
@@ -28,8 +37,9 @@ public class BayesAgent implements Agent{
      * */
     public void get_status(String name, String players, String spies, int mission, int failures){
         this.name = name;
-        this.players = players.split(string_delimenator);
+        this.players = new ArrayList<String>(Arrays.asList(players.split(string_delimenator)));
         spy = spies.indexOf(name) != -1; // Checking if we are a spy
+        spy_list = new ArrayList<String>(Arrays.asList(spies.split(string_delimenator)));
         next_mission = mission;
         total_failures = failures;
     }
@@ -88,7 +98,7 @@ public class BayesAgent implements Agent{
      **/
     public void get_ProposedMission(String leader, String mission){
         current_leader = leader;
-        all_mission_players = mission.split(string_delimenator);
+        all_mission_players = new ArrayList<String>(Arrays.asList(mission.split(string_delimenator)));
     }
 
     /**
@@ -105,7 +115,7 @@ public class BayesAgent implements Agent{
      * @param yays the names of the agents who voted for the mission
      **/
     public void get_Votes(String yays){
-        previous_mission_votes = yays.split(string_delimenator);
+        previous_mission_votes = new ArrayList<String>(Arrays.asList(yays.split(string_delimenator)));
     }
 
     /**
@@ -114,7 +124,7 @@ public class BayesAgent implements Agent{
      * @param mission the Agents being sent on a mission
      **/
     public void get_Mission(String mission){
-        current_mission_players = mission.split(string_delimenator);
+        current_mission_players = new ArrayList<String>(Arrays.asList(mission.split(string_delimenator)));
     }
 
     /**
