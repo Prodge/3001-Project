@@ -191,7 +191,7 @@ public class BayesAgent implements Agent{
         // We want to betray the mission BUT earlier in the game it is more risky to do so as others might see a pattern
         // Special case if we have 2 failed missions; betray as we will win
         int num_missions = 5;
-        return spy && (next_mission / num_missions) > Math.random() || total_failures == 2;
+        return spy && (current_mission / num_missions) > Math.random() || total_failures == 2;
     }
 
     /**

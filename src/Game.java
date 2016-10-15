@@ -100,6 +100,13 @@ public class Game{
         }
         spies.add(spy);
       }
+
+      ///////////////////////////
+      spies.clear();
+      spies.add('D');
+      spies.add('E');
+      ///////////////////////////
+
       for(Character c: players.keySet())playerString+=c;
       for(Character c: spies){spyString+=c; resString+='?';}
       statusUpdate(1,0);
@@ -271,8 +278,10 @@ public class Game{
   public static void main(String[] args){
     Game g = new Game();
     g.stopwatchOn();g.addPlayer(new BayesAgent());g.stopwatchOff(1000,'A');
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'B');
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'C');
+    g.stopwatchOn();g.addPlayer(new BayesAgent());g.stopwatchOff(1000,'B');
+    g.stopwatchOn();g.addPlayer(new BayesAgent());g.stopwatchOff(1000,'C');
+
+    //g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'C');
     g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'D');
     g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'E');
     g.setup();
