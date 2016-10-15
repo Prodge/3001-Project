@@ -42,7 +42,9 @@ public class BayesAgent implements Agent{
      * @return a String containing the names of all the agents in a mission
      * */
     public String do_Nominate(int number){
-
+        // get sorted list of agents -> how many times they are accused
+        // add all non accused agents to mission list
+        // if we still need more, add the least accused agents
         return "";
     }
 
