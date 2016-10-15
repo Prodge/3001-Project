@@ -103,7 +103,7 @@ public class BayesAgent implements Agent{
                 accusation_map.remove(least_accused);
             }
         }
-        return nominations.toString();
+        return String.join("", nominations);
     }
 
     /**
@@ -189,7 +189,7 @@ public class BayesAgent implements Agent{
 
         // If the last mission had n players and n betrayals, accuse all of the players
         if(!spy && current_mission_players.size() == mission_traitors){
-            return current_mission_players.toString();
+            return String.join("", current_mission_players);
         }
         return "";
     }
