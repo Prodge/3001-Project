@@ -22,6 +22,11 @@ public class AccusationList{
         return accusation_list.size();
     }
 
+    public HashMap get_accusation_map(){
+        HashMap accusation_map = new HashMap();
+        return accusation_map;
+    }
+
     public void add_accusation(String accuser, String accused, String string_delimenator){
         accusation_list.add(new Accusation(accuser, accused.split(string_delimenator)));
     }
