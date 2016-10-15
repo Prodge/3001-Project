@@ -15,7 +15,7 @@ public class BayesAgent implements Agent{
     private AccusationList accusations;
 
     public BayesAgent(){
-        AccusationList accusations = new AccusationList();
+        accusations = new AccusationList();
     }
 
     /**

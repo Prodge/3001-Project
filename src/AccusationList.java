@@ -7,7 +7,7 @@ public class AccusationList{
     private String[] last_accused_people;
 
     public AccusationList(){
-        ArrayList accusation_list = new ArrayList<Accusation>();
+        accusation_list = new ArrayList<Accusation>();
     }
 
     public String get_recent_accuser(){
