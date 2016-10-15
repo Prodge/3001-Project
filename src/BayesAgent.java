@@ -52,6 +52,21 @@ public class BayesAgent implements Agent{
             Map.Entry<String, Integer> pair = it.next();
             if(lowest_value == -1 || pair.getValue() < lowest_value){
                 key = pair.getKey();
+                lowest_value = pair.getValue();
+            }
+        }
+        return key;
+    }
+
+    private String get_highest_key(HashMap<String, Integer> map){
+        String key = "";
+        int highest_value = -1;
+        Iterator<Map.Entry<String, Integer>> it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, Integer> pair = it.next();
+            if(highest_value == -1 || pair.getValue() > highest_value){
+                key = pair.getKey();
+                highest_value = pair.getValue();
             }
         }
         return key;
@@ -161,7 +176,21 @@ public class BayesAgent implements Agent{
      * @return a string containing the name of each accused agent.
      * */
     public String do_Accuse(){
-        //TODO
+        // If I am a spy, accuse the most frequently previously accused non spy 50% of the time
+        if(spy && Math.random() > 0.5){
+            HashMap<String, Integer> accusation_map = accusations.get_accusation_map();
+            String most_accused = get_highest_key(accusation_map);
+            while(spy_list.contains(most_accused)){
+                accusation_map.remove(most_accused);
+                most_accused = get_highest_key(accusation_map);
+            }
+            return most_accused;
+        }
+
+        // If the last mission had n players and n betrayals, accuse all of the players
+        if(!spy && current_mission_players.size() == mission_traitors){
+            return current_mission_players.toString();
+        }
         return "";
     }
 
