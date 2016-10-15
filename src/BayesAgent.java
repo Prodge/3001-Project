@@ -132,10 +132,16 @@ public class BayesAgent implements Agent{
      * @return true if agent betrays, false otherwise
      **/
     public boolean do_Betray(){
-        // Linear increase of probably of betrayal throughout the game
-        // We want to betray the mission if we are a spy BUT earlier in the game it is more risky to do so
+        // If the mission has less than 30% of the players betraying is risky
+        if((double) current_mission_players.size() / players.size() > 0.3){
+            return false;
+        }
+
+        // Linear increase of probably of betrayal throughout the game if we are a spy
+        // We want to betray the mission BUT earlier in the game it is more risky to do so as others might see a pattern
+        // Special case if we have 2 failed missions; betray as we will win
         int num_missions = 5;
-        return spy && (next_mission / num_missions) > Math.random();
+        return spy && (next_mission / num_missions) > Math.random() || total_failures == 2;
     }
 
     /**
