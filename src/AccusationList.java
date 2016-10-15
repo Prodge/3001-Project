@@ -20,6 +20,27 @@ public class AccusationList{
         return accusation_list.size();
     }
 
+    public HashMap<String, Integer> get_accusation_map(){
+        HashMap<String, Integer> accusation_map = new HashMap<String, Integer>();
+        for(Accusation accusation : accusation_list){
+            for(String accused : accusation.accused){
+                accusation_map.put(accused, accusation_map.getOrDefault(accused, 0) + 1);
+            }
+        }
+        return accusation_map;
+    }
+
+    public ArrayList<String> get_non_accused(ArrayList<String> players){
+        ArrayList<String> non_accused = new ArrayList<String>();
+        HashMap<String, Integer> accusation_map = get_accusation_map();
+        for(String player : players){
+            if(!accusation_map.containsKey(player)){
+                non_accused.add(player);
+            }
+        }
+        return non_accused;
+    }
+
     public void add_accusation(String accuser, String accused, String string_delimenator){
         accusation_list.add(new Accusation(accuser, new ArrayList<String>(Arrays.asList(accused.split(string_delimenator)))));
     }

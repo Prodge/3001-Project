@@ -44,6 +44,19 @@ public class BayesAgent implements Agent{
         total_failures = failures;
     }
 
+    private String get_lowest_key(HashMap<String, Integer> map){
+        String key = "";
+        int lowest_value = -1;
+        Iterator<Map.Entry<String, Integer>> it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, Integer> pair = it.next();
+            if(lowest_value == -1 || pair.getValue() < lowest_value){
+                key = pair.getKey();
+            }
+        }
+        return key;
+    }
+
     /**
      * Nominates a group of agents to go on a mission.
      * If the String does not correspond to a legitimate mission (<i>number</i> of distinct agents, in a String),
@@ -52,10 +65,30 @@ public class BayesAgent implements Agent{
      * @return a String containing the names of all the agents in a mission
      * */
     public String do_Nominate(int number){
-        // get sorted list of agents -> how many times they are accused
-        // add all non accused agents to mission list
-        // if we still need more, add the least accused agents
-        return "";
+        ArrayList<String> nominations = new ArrayList<String>();
+        HashMap<String, Integer> accusation_map = accusations.get_accusation_map();
+        ArrayList<String> non_accused = accusations.get_non_accused(players);
+
+        // If we are a spy, we want to go on the mission.
+        // We don't want to give away our position so we only nominate ourselves 50% of the time
+        if(spy && Math.random() > 0.5){
+            nominations.add(name);
+        }
+
+        while(nominations.size() != number){
+            // If we have non accused players add them first
+            if(non_accused.size() != 0){
+                nominations.add(non_accused.get(0));
+                non_accused.remove(0);
+
+            // Otherwise add the players with the lowest number of accusations
+            }else{
+                String least_accused = get_lowest_key(accusation_map);
+                nominations.add(least_accused);
+                accusation_map.remove(least_accused);
+            }
+        }
+        return nominations.toString();
     }
 
     /**
