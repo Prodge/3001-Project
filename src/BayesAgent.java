@@ -64,6 +64,21 @@ public class BayesAgent implements Agent{
             Map.Entry<String, Integer> pair = it.next();
             if(lowest_value == -1 || pair.getValue() < lowest_value){
                 key = pair.getKey();
+                lowest_value = pair.getValue();
+            }
+        }
+        return key;
+    }
+
+    private String get_highest_key(HashMap<String, Integer> map){
+        String key = "";
+        int highest_value = -1;
+        Iterator<Map.Entry<String, Integer>> it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, Integer> pair = it.next();
+            if(highest_value == -1 || pair.getValue() > highest_value){
+                key = pair.getKey();
+                highest_value = pair.getValue();
             }
         }
         return key;
@@ -100,7 +115,7 @@ public class BayesAgent implements Agent{
                 accusation_map.remove(least_accused);
             }
         }
-        return nominations.toString();
+        return String.join("", nominations);
     }
 
     /**
@@ -167,8 +182,16 @@ public class BayesAgent implements Agent{
      * @return true if agent betrays, false otherwise
      **/
     public boolean do_Betray(){
-        //TODO
-        return true;
+        // If the mission has less than 30% of the players betraying is risky
+        if((double) current_mission_players.size() / players.size() > 0.3){
+            return false;
+        }
+
+        // Linear increase of probably of betrayal throughout the game if we are a spy
+        // We want to betray the mission BUT earlier in the game it is more risky to do so as others might see a pattern
+        // Special case if we have 2 failed missions; betray as we will win
+        int num_missions = 5;
+        return spy && (next_mission / num_missions) > Math.random() || total_failures == 2;
     }
 
     /**
@@ -189,7 +212,21 @@ public class BayesAgent implements Agent{
      * @return a string containing the name of each accused agent.
      * */
     public String do_Accuse(){
-        //TODO
+        // If I am a spy, accuse the most frequently previously accused non spy 50% of the time
+        if(spy && Math.random() > 0.5){
+            HashMap<String, Integer> accusation_map = accusations.get_accusation_map();
+            String most_accused = get_highest_key(accusation_map);
+            while(spy_list.contains(most_accused)){
+                accusation_map.remove(most_accused);
+                most_accused = get_highest_key(accusation_map);
+            }
+            return most_accused;
+        }
+
+        // If the last mission had n players and n betrayals, accuse all of the players
+        if(!spy && current_mission_players.size() == mission_traitors){
+            return String.join("", current_mission_players);
+        }
         return "";
     }
 
