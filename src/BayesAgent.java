@@ -2,7 +2,7 @@ import java.util.*;
 
 public class BayesAgent implements Agent{
     // Constants
-    private static final String string_delimenator = ";";
+    private static final String string_delimenator = "";
 
     // State variables
     private boolean spy;
@@ -183,7 +183,7 @@ public class BayesAgent implements Agent{
      **/
     public boolean do_Betray(){
         // If the mission has less than 30% of the players betraying is risky
-        if((double) current_mission_players.size() / players.size() > 0.3){
+        if((double) current_mission_players.size() / players.size() < 0.3){
             return false;
         }
 
@@ -191,7 +191,7 @@ public class BayesAgent implements Agent{
         // We want to betray the mission BUT earlier in the game it is more risky to do so as others might see a pattern
         // Special case if we have 2 failed missions; betray as we will win
         int num_missions = 5;
-        return spy && (current_mission / num_missions) > Math.random() || total_failures == 2;
+        return spy && ((double) current_mission / num_missions) > Math.random() || total_failures == 2;
     }
 
     /**
