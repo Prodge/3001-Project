@@ -2,30 +2,40 @@ import java.util.*;
 
 public class Accusation{
 
-    private HashMap<String, new > accusation_map;
+    private ArrayList<SimpleAccusation> accusation_list;
     private String last_accuser;
     private String[] last_accused_people;
 
     public Accusation(){
-        HashMap accusation_map = new HashMap<String, String[]>();
+        ArrayList accusation_list = new ArrayList<SimpleAccusation>();
     }
 
-    public get_recent_accusation(){
-
+    public String get_recent_accuser(){
+        return last_accuser;
     }
 
-    public void add_accusation(String accuser, String accused){
-        accusation_map.put(accuser, accused.split(","));
+    public String[] get_recent_accused(){
+        return last_accused_people;
+    }
+
+    public int get_total_accusations(){
+        return accusation_list.size();
+    }
+
+    public void add_accusation(String accuser, String accused, String string_delimenator){
+        accusation_list.add(new SimpleAccusation(accuser, accused.split(string_delimenator)));
     }
 
 }
 
-class Tuple<X, Y> {
-    public final X x;
-    public final Y y;
+class SimpleAccusation{
 
-    public Tuple(X x, Y y) {
+    public final String x;
+    public final String[] y;
+
+    public SimpleAccusation(String x, String[] y) {
         this.x = x;
         this.y = y;
     }
+
 }

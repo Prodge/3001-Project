@@ -1,19 +1,21 @@
+import java.util.*;
 
 public class BayesAgent implements Agent{
-
+  private static final String string_delimenator = ";";
   private String name;
-  private String players;
+  private String[] players;
   private boolean spy;
   private int next_mission;
   private int total_failures;
   private String current_leader;
-  private String current_mission_players;
-  private String previous_mission_votes;
+  private String[] all_mission_players;
+  private String[] current_mission_players;
+  private String[] previous_mission_votes;
   private int mission_traitors;
-  private String accuser;
-  private String accused_agents;
+  private Accusation accusations;
 
   public BayesAgent(){
+    Accusation accusations = new Accusation();
   }
 
   /**
@@ -26,7 +28,7 @@ public class BayesAgent implements Agent{
    * */
   public void get_status(String name, String players, String spies, int mission, int failures){
     this.name = name;
-    this.players = players;
+    this.players = players.split(string_delimenator);
     spy = spies.indexOf(name) != -1; // Checking if we are a spy
     next_mission = mission;
     total_failures = failures;
@@ -40,7 +42,8 @@ public class BayesAgent implements Agent{
    * @return a String containing the names of all the agents in a mission
    * */
   public String do_Nominate(int number){
-
+    //TODO
+    return '';
   }
 
   /**
@@ -50,7 +53,7 @@ public class BayesAgent implements Agent{
    **/
   public void get_ProposedMission(String leader, String mission){
     current_leader = leader;
-    current_mission_players = mission;
+    all_mission_players = mission.split(string_delimenator);
   }
 
   /**
@@ -58,7 +61,8 @@ public class BayesAgent implements Agent{
    * @return true, if the agent votes for the mission, false, if they vote against it.
    * */
   public boolean do_Vote(){
-
+    //TODO
+    return true;
   }
 
   /**
@@ -66,7 +70,7 @@ public class BayesAgent implements Agent{
    * @param yays the names of the agents who voted for the mission
    **/
   public void get_Votes(String yays){
-    previous_mission_votes = yays;
+    previous_mission_votes = yays.split(string_delimenator);
   }
 
   /**
@@ -83,7 +87,8 @@ public class BayesAgent implements Agent{
    * @return true if agent betrays, false otherwise
    **/
   public boolean do_Betray(){
-
+    //TODO
+    return true;
   }
 
   /**
@@ -103,7 +108,8 @@ public class BayesAgent implements Agent{
    * @return a string containing the name of each accused agent.
    * */
   public String do_Accuse(){
-
+    //TODO
+    return '';
   }
 
   /**
@@ -112,8 +118,7 @@ public class BayesAgent implements Agent{
    * @param accused the names of the Agents being Accused, concatenated in a String.
    * */
   public void get_Accusation(String accuser, String accused){
-    this.accuser = accuser;
-    this.accused = accused;
+    accusations.add_accusation(accuser, accused, string_delimenator);
   }
 
 }
