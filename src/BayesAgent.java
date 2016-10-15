@@ -43,7 +43,7 @@ public class BayesAgent implements Agent{
    * */
   public String do_Nominate(int number){
     //TODO
-    return '';
+    return "";
   }
 
   /**
@@ -79,7 +79,7 @@ public class BayesAgent implements Agent{
    * @param mission the Agents being sent on a mission
    **/
   public void get_Mission(String mission){
-    current_mission_players = mission;
+    current_mission_players = mission.split(string_delimenator);
   }
 
   /**
@@ -109,7 +109,7 @@ public class BayesAgent implements Agent{
    * */
   public String do_Accuse(){
     //TODO
-    return '';
+    return "";
   }
 
   /**
