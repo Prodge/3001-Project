@@ -12,10 +12,10 @@ public class BayesAgent implements Agent{
     private String[] current_mission_players;
     private String[] previous_mission_votes;
     private int mission_traitors;
-    private Accusation accusations;
+    private AccusationList accusations;
 
     public BayesAgent(){
-        Accusation accusations = new Accusation();
+        AccusationList accusations = new AccusationList();
     }
 
     /**
