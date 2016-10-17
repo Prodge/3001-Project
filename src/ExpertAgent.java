@@ -58,6 +58,30 @@ public class ExpertAgent implements Agent{
     }
 
 
+    private ArrayList<String> get_suspicious_players(){
+        int min_failed_missions = 2;
+        ArrayList<ArrayList<String>> failed_teams = get_failed_teams();
+        HashMap<String, Integer> player_fail_map = new HashMap<String, Integer>();
+
+        // Generate a mapping of players to how many times they have been in a failed mission
+        for(ArrayList<String> team : failed_teams){
+            for(String player : team){
+                player_fail_map.put(player, player_fail_map.getOrDefault(player, 0) + 1);
+            }
+        }
+
+        // Build a list of the players ordered by most failed missions,
+        // with at least 'min_failed_missions' failed missions
+        ArrayList<String> suspicious_players = new ArrayList<String>();
+        String suspicious_player = get_highest_key(player_fail_map);
+        while(player_fail_map.get(suspicious_player) >= min_failed_missions){
+            suspicious_players.add(suspicious_player);
+            player_fail_map.remove(suspicious_player);
+            suspicious_player = get_highest_key(player_fail_map);
+        }
+        return suspicious_players;
+    }
+
     /**
      * Nominates a group of agents to go on a mission.
      * If the String does not correspond to a legitimate mission (<i>number</i> of distinct agents, in a String),
@@ -68,15 +92,26 @@ public class ExpertAgent implements Agent{
      * */
     public String do_Nominate(int number){
         ArrayList<String> nominations = new ArrayList<String>();
-        HashMap<String, Integer> accusation_map = accusations.get_accusation_map();
-        ArrayList<String> non_accused = accusations.get_non_accused(players);
+        ArrayList<String> suspicious_players = get_suspicious_players();
 
-        // If we are a spy, we want to go on the mission.
-        // We don't want to give away our position so we only nominate ourselves 50% of the time
-        if(spy && Math.random() > 0.5){
+        // if you are resistance, always send yourself
+        if(!spy){
             nominations.add(name);
+            while(nominations.size() != number){
+                nominations.add(suspicious_players.get(0));
+                suspicious_players.remove(0);
+            }
+        }else{
+            // If we are a spy, nominate a random spy to go on the mission each time
+            nominations.add(spy_list.get((int) (Math.random() * spy_list.size())));
         }
 
+        // Fill the rest of our nominations with least accused players.
+        // If we are a spy we have already nominated a spy to go on the mission,
+        // we don't want more than one spy on each mission as it is easy to spot a pattern.
+        // If we are not a spy, this is a relativley safe way to order players in suspiciousness.
+        HashMap<String, Integer> accusation_map = accusations.get_accusation_map();
+        ArrayList<String> non_accused = accusations.get_non_accused(players);
         while(nominations.size() != number){
             // If we have non accused players add them first
             if(non_accused.size() != 0){
@@ -111,22 +146,26 @@ public class ExpertAgent implements Agent{
      * @return true, if the agent votes for the mission, false, if they vote against it.
      * */
     public boolean do_Vote(){
-        if (spy){
-            // Taking a risk since the game could finish
-            if (total_failures == 2) return true;
-            // Last mission voting up since the resistance would
-            if (current_mission == 5) return false;
-            // Vote up for a mission with a spy
-            if (spy_in_team(current_mission_propositions.get_latest_value())) return true;
-            // Voting strongly about this team because it's size 3
-            if (current_mission_propositions.get_latest_value().size() == 3)
-                return current_mission_propositions.get_latest_value().contains(name);
-        }
-        // Approving my own mission selection
-        if (leader_list.get_latest_value() == name) return true;
-        // Voting last mission to avoid failure
-        if (current_mission == 5) return true;
-        return false;
+        // As a spy, vote for all missions that include one spy
+        if (spy)
+            return spy_in_team(current_mission_propositions.get_latest_value(), spy_list);
+        // Always approve our own missions
+        if (leader_list.get_latest_value() == name)
+            return true;
+        // As resistance, always pass the last round
+        if (current_mission == 5)
+            return true;
+        // If there is a known spy on the team
+        if (spy_in_team(current_mission_propositions.get_latest_value(), get_suspicous_players()))
+            return false;
+        // If current team has a subset of past failed teams
+        if (is_subset_of_team(current_mission_propositions.get_latest_value(), get_failed_teams()))
+            return false;
+        // If I'm not on the team and its a team of 3
+        if (current_mission_propositions.get_latest_value().size() == 3 && !current_mission_propositions.get_latest_value().contains(name))
+            return false;
+        // Otherwise just approve the team
+        return true;
     }
 
     /**
@@ -239,11 +278,28 @@ public class ExpertAgent implements Agent{
         return key;
     }
 
-    private boolean spy_in_team(ArrayList<String> team){
-        for (String player : spy_list){
+    private boolean spy_in_team(ArrayList<String> team, ArrayList<String> spies){
+        for (String player : spies){
             if (team.contains(player)) return true;
         }
         return false;
     }
 
+    private ArrayList<ArrayList<String>> get_failed_teams(){
+        ArrayList<ArrayList<String>> failed_teams = new ArrayList<ArrayList<String>>();
+        for (int i=1; i<current_mission; i++)
+            if (traitors_list.get_value_for_key(i) > 0)
+                failed_teams.add(players_mission_list.get_value_for_key(i));
+        return failed_teams;
+    }
+
+    private boolean is_subset_of_team(ArrayList<String> team, ArrayList<ArrayList<String>> team_list){
+        for (ArrayList<String> t : team_list){
+            ArrayList<String> match = t;
+            match.retainAll(team);
+            if (match.size() > 0)
+                return true;
+        }
+        return false;
+    }
 }
