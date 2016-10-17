@@ -103,8 +103,8 @@ public class Game{
 
       ///////////////////////////
       spies.clear();
-      spies.add('A');
-      spies.add('B');
+      spies.add('D');
+      spies.add('E');
       ///////////////////////////
 
       for(Character c: players.keySet())playerString+=c;
@@ -279,9 +279,9 @@ public class Game{
     Game g = new Game();
     g.stopwatchOn();g.addPlayer(new ExpertAgent());g.stopwatchOff(1000,'A');
     g.stopwatchOn();g.addPlayer(new ExpertAgent());g.stopwatchOff(1000,'B');
-    //g.stopwatchOn();g.addPlayer(new ExpertAgent());g.stopwatchOff(1000,'C');
+    g.stopwatchOn();g.addPlayer(new ExpertAgent());g.stopwatchOff(1000,'C');
 
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'C');
+    //g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'C');
     g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'D');
     g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'E');
     g.setup();
