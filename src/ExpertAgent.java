@@ -74,7 +74,7 @@ public class ExpertAgent implements Agent{
         // with at least 'min_failed_missions' failed missions
         ArrayList<String> suspicious_players = new ArrayList<String>();
         String suspicious_player = get_highest_key(player_fail_map);
-        while(player_fail_map.get(suspicious_player) >= min_failed_missions){
+        while(suspicious_player != "" && player_fail_map.get(suspicious_player) >= min_failed_missions){
             suspicious_players.add(suspicious_player);
             player_fail_map.remove(suspicious_player);
             suspicious_player = get_highest_key(player_fail_map);
@@ -94,13 +94,16 @@ public class ExpertAgent implements Agent{
         ArrayList<String> nominations = new ArrayList<String>();
         ArrayList<String> suspicious_players = get_suspicious_players();
 
-        // if you are resistance, always send yourself
         if(!spy){
+            // if you are resistance, always send yourself
             nominations.add(name);
-            while(nominations.size() != number){
-                nominations.add(suspicious_players.get(0));
-                suspicious_players.remove(0);
-            }
+
+            // Now add any non suspicious players
+
+
+
+
+
         }else{
             // If we are a spy, nominate a random spy to go on the mission each time
             nominations.add(spy_list.get((int) (Math.random() * spy_list.size())));
