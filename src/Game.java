@@ -89,23 +89,11 @@ public class Game{
    * Sets up the game and informs all players of their status.
    * This involves assigning players as spies according to the rules.
    */
-  public void setup(){
+  public void setup(Set<Character> assigned_spies){
     if(numPlayers < 5) throw new RuntimeException("Too few players");
     else if(started) throw new RuntimeException("Game already underway");
     else{
-      for(int i = 0; i<spyNum[numPlayers-5]; i++){
-        char spy = ' ';
-        while(spy==' ' || spies.contains(spy)){
-          spy = (char)(65+rand.nextInt(numPlayers));
-        }
-        spies.add(spy);
-      }
-
-      ///////////////////////////
-      spies.clear();
-      spies.add('D');
-      spies.add('E');
-      ///////////////////////////
+      spies = assigned_spies;
 
       for(Character c: players.keySet())playerString+=c;
       for(Character c: spies){spyString+=c; resString+='?';}
@@ -118,7 +106,7 @@ public class Game{
   /**
    * Starts a timer for Agent method calls
    * */
-  private void stopwatchOn(){
+  public void stopwatchOn(){
     stopwatch = System.currentTimeMillis();
   }
 
@@ -127,7 +115,7 @@ public class Game{
    * @param limit the limit since stopwatch start, in milliseconds
    * @param player the player who the violation will be recorded against.
    * */
-  private void stopwatchOff(long limit, Character player){
+  public void stopwatchOff(long limit, Character player){
     long delay = System.currentTimeMillis()-stopwatch;
     if(delay>limit)
       log("Player: "+player+". Time exceeded by "+delay);
@@ -236,7 +224,7 @@ public class Game{
    * Conducts the game play, consisting of 5 rounds, each with a series of nominations and votes, and the eventual mission.
    * It logs the result of the game at the end.
    * */
-  public void play(){
+  public int play(){
     int fails = 0;
     for(int round = 1; round<=5; round++){
       String team = nominate(round);
@@ -269,22 +257,7 @@ public class Game{
     if(fails>2) log("Government Wins! "+fails+" missions failed.");
     else log("Resistance Wins! "+fails+" missions failed.");
     log("The Government Spies were "+spyString+".");
+    return fails;
   }
 
-
-  /**
-   * Sets up game with random agents and plays
-   **/
-  public static void main(String[] args){
-    Game g = new Game();
-    g.stopwatchOn();g.addPlayer(new ExpertAgent());g.stopwatchOff(1000,'A');
-    g.stopwatchOn();g.addPlayer(new ExpertAgent());g.stopwatchOff(1000,'B');
-    g.stopwatchOn();g.addPlayer(new ExpertAgent());g.stopwatchOff(1000,'C');
-
-    //g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'C');
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'D');
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'E');
-    g.setup();
-    g.play();
-  }
 }
