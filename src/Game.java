@@ -277,9 +277,9 @@ public class Game{
    **/
   public static void main(String[] args){
     Game g = new Game();
-    g.stopwatchOn();g.addPlayer(new BayesAgent());g.stopwatchOff(1000,'A');
-    g.stopwatchOn();g.addPlayer(new BayesAgent());g.stopwatchOff(1000,'B');
-    g.stopwatchOn();g.addPlayer(new BayesAgent());g.stopwatchOff(1000,'C');
+    g.stopwatchOn();g.addPlayer(new ExpertAgent());g.stopwatchOff(1000,'A');
+    g.stopwatchOn();g.addPlayer(new ExpertAgent());g.stopwatchOff(1000,'B');
+    g.stopwatchOn();g.addPlayer(new ExpertAgent());g.stopwatchOff(1000,'C');
 
     //g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'C');
     g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'D');

@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class BayesAgent implements Agent{
+public class ExpertAgent implements Agent{
     // Constants
     private static final String string_delimenator = "";
 
@@ -22,7 +22,7 @@ public class BayesAgent implements Agent{
     private HistoryList<ArrayList<String>> players_mission_list;
     private HistoryList<HistoryList<ArrayList<String>>> mission_propositions_list;
 
-    public BayesAgent(){
+    public ExpertAgent(){
         players = new ArrayList<String>();
         spy_list = new ArrayList<String>();
         accusations = new AccusationList();
@@ -49,15 +49,10 @@ public class BayesAgent implements Agent{
         this.players = new ArrayList<String>(Arrays.asList(players.split(string_delimenator)));
         current_mission = mission - 1;
         spy = spies.indexOf(name) != -1; // Checking if we are a spy
-        if (spy){
-            spy_list = new ArrayList<String>(Arrays.asList(spies.split(string_delimenator)));
-            total_wins = failures;
-            total_failures = current_mission - total_wins;
-        }else{
-            spy_list = new ArrayList<String>(Arrays.asList("".split(string_delimenator)));
-            total_failures = failures;
-            total_wins = current_mission - total_failures;
-        }
+        spies = spy ? spies : "";
+        spy_list = new ArrayList<String>(Arrays.asList(spies.split(string_delimenator)));
+        total_failures = failures;
+        total_wins = current_mission - total_failures;
         mission_propositions_list.add(current_mission-1, current_mission_propositions);
         current_mission_propositions = new HistoryList<ArrayList<String>>();
     }
