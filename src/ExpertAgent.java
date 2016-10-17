@@ -156,7 +156,7 @@ public class ExpertAgent implements Agent{
         if (current_mission == 5)
             return true;
         // If there is a known spy on the team
-        if (spy_in_team(current_mission_propositions.get_latest_value(), get_suspicous_players()))
+        if (spy_in_team(current_mission_propositions.get_latest_value(), get_suspicious_players()))
             return false;
         // If current team has a subset of past failed teams
         if (is_subset_of_team(current_mission_propositions.get_latest_value(), get_failed_teams()))
