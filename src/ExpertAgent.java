@@ -198,8 +198,12 @@ public class ExpertAgent implements Agent{
      * @return true if agent betrays, false otherwise
      **/
     public boolean do_Betray(){
-        // If the mission has less than 30% of the players betraying is risky
-        if((double) players_mission_list.get_latest_value().size() / players.size() < 0.3){
+        if(!spy){
+            return false;
+        }
+
+        // If the mission has less than 25% of the players betraying is risky
+        if((double) players_mission_list.get_latest_value().size() / players.size() < 0.25){
             return false;
         }
 
@@ -208,7 +212,8 @@ public class ExpertAgent implements Agent{
         // it is more risky to do so as others might see a pattern
         // Special case if we have 2 failed missions; betray as we will win
         int num_missions = 5;
-        return spy && ((double) current_mission / num_missions) > Math.random() || total_failures == 2;
+        double base_factor = 0.5; // the minimum chance of betrayal
+        return spy && (((double) current_mission / num_missions) * (1 - base_factor) + base_factor) > Math.random() || total_failures == 2;
     }
 
     /**
