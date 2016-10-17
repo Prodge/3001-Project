@@ -2,5 +2,6 @@
 
 echo "########### ############ ############"
 make clean
+make copy-deps
 clear;
 time make run

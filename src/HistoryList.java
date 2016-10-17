@@ -26,4 +26,8 @@ public class HistoryList<T> {
     public int get_next_key(){
         return last_key + 1;
     }
+
+    public boolean is_empty(){
+        return main.isEmpty();
+    }
 }
