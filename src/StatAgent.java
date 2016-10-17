@@ -67,6 +67,7 @@ public class StatAgent implements Agent{
      * @return a String containing the names of all the agents in a mission
      * */
     public String do_Nominate(int number){
+        return "";
     }
 
     /**
@@ -87,6 +88,7 @@ public class StatAgent implements Agent{
      * @return true, if the agent votes for the mission, false, if they vote against it.
      * */
     public boolean do_Vote(){
+        return true;
     }
 
     /**
@@ -111,6 +113,7 @@ public class StatAgent implements Agent{
      * @return true if agent betrays, false otherwise
      **/
     public boolean do_Betray(){
+        return spy;
     }
 
     /**
@@ -129,6 +132,7 @@ public class StatAgent implements Agent{
      * @return a string containing the name of each accused agent.
      * */
     public String do_Accuse(){
+        return "";
     }
 
     /**
