@@ -2,5 +2,6 @@
 
 echo "########### ############ ############"
 make clean
+make copy-deps
 clear;
 time make run PROGRAM_ARGS="$1 $2 $3 $4"
