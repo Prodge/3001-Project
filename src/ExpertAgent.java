@@ -99,11 +99,12 @@ public class ExpertAgent implements Agent{
             nominations.add(name);
 
             // Now add any non suspicious players
-
-
-
-
-
+            ArrayList<String> non_suspicious_players = players;
+            non_suspicious_players.removeAll(suspicious_players);
+            while(nominations.size() != number && non_suspicious_players.size() !=0){
+                nominations.add(non_suspicious_players.get(0));
+                non_suspicious_players.remove(0);
+            }
         }else{
             // If we are a spy, nominate a random spy to go on the mission each time
             nominations.add(spy_list.get((int) (Math.random() * spy_list.size())));
@@ -118,13 +119,17 @@ public class ExpertAgent implements Agent{
         while(nominations.size() != number){
             // If we have non accused players add them first
             if(non_accused.size() != 0){
-                nominations.add(non_accused.get(0));
+                if(!nominations.contains(non_accused.get(0))){
+                    nominations.add(non_accused.get(0));
+                }
                 non_accused.remove(0);
 
             // Otherwise add the players with the lowest number of accusations
             }else{
                 String least_accused = get_lowest_key(accusation_map);
-                nominations.add(least_accused);
+                if(!nominations.contains(least_accused)){
+                    nominations.add(least_accused);
+                }
                 accusation_map.remove(least_accused);
             }
         }
