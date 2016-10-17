@@ -202,18 +202,16 @@ public class ExpertAgent implements Agent{
             return false;
         }
 
-        // If the mission has less than 25% of the players betraying is risky
-        if((double) players_mission_list.get_latest_value().size() / players.size() < 0.25){
+        int mission_size = players_mission_list.get_latest_value().size();
+
+        // Do not betray if we are the only player on the mission
+        if(mission_size == 1){
             return false;
         }
 
-        // Linear increase of probably of betrayal throughout the game if we are a spy
-        // We want to betray the mission BUT earlier in the game
-        // it is more risky to do so as others might see a pattern
-        // Special case if we have 2 failed missions; betray as we will win
-        int num_missions = 5;
-        double base_factor = 0.5; // the minimum chance of betrayal
-        return spy && (((double) current_mission / num_missions) * (1 - base_factor) + base_factor) > Math.random() || total_failures == 2;
+        // Higher odds of betraying when the mission contains a larger number of players
+        double base_factor = 0.25; // the minimum chance of betrayal
+        return ((((double) mission_size / players.size()) * (1 - base_factor)) + base_factor > Math.random());
     }
 
     /**
