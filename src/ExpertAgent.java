@@ -111,22 +111,26 @@ public class ExpertAgent implements Agent{
      * @return true, if the agent votes for the mission, false, if they vote against it.
      * */
     public boolean do_Vote(){
-        if (spy){
-            // Taking a risk since the game could finish
-            if (total_failures == 2) return true;
-            // Last mission voting up since the resistance would
-            if (current_mission == 5) return false;
-            // Vote up for a mission with a spy
-            if (spy_in_team(current_mission_propositions.get_latest_value())) return true;
-            // Voting strongly about this team because it's size 3
-            if (current_mission_propositions.get_latest_value().size() == 3)
-                return current_mission_propositions.get_latest_value().contains(name);
-        }
-        // Approving my own mission selection
-        if (leader_list.get_latest_value() == name) return true;
-        // Voting last mission to avoid failure
-        if (current_mission == 5) return true;
-        return false;
+        // As a spy, vote for all missions that include one spy
+        if (spy)
+            return spy_in_team(current_mission_propositions.get_latest_value(), spy_list);
+        // Always approve our own missions
+        if (leader_list.get_latest_value() == name)
+            return true;
+        // As resistance, always pass the last round
+        if (current_mission == 5)
+            return true;
+        // If there is a known spy on the team
+        if (spy_in_team(current_mission_propositions.get_latest_value(), get_suspicous_players()))
+            return false;
+        // If current team has a subset of past failed teams
+        if (is_subset_of_team(current_mission_propositions.get_latest_value(), get_failed_teams()))
+            return false;
+        // If I'm not on the team and its a team of 3
+        if (current_mission_propositions.get_latest_value().size() == 3 && !current_mission_propositions.get_latest_value().contains(name))
+            return false;
+        // Otherwise just approve the team
+        return true;
     }
 
     /**
@@ -239,11 +243,28 @@ public class ExpertAgent implements Agent{
         return key;
     }
 
-    private boolean spy_in_team(ArrayList<String> team){
-        for (String player : spy_list){
+    private boolean spy_in_team(ArrayList<String> team, ArrayList<String> spies){
+        for (String player : spies){
             if (team.contains(player)) return true;
         }
         return false;
     }
 
+    private ArrayList<ArrayList<String>> get_failed_teams(){
+        ArrayList<ArrayList<String>> failed_teams = new ArrayList<ArrayList<String>>();
+        for (int i=1; i<current_mission; i++)
+            if (traitors_list.get_value_for_key(i) > 0)
+                failed_teams.add(players_mission_list.get_value_for_key(i));
+        return failed_teams;
+    }
+
+    private boolean is_subset_of_team(ArrayList<String> team, ArrayList<ArrayList<String>> team_list){
+        for (ArrayList<String> t : team_list){
+            ArrayList<String> match = t;
+            match.retainAll(team);
+            if (match.size() > 0)
+                return true;
+        }
+        return false;
+    }
 }
