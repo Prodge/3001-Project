@@ -58,30 +58,6 @@ public class ExpertAgent implements Agent{
     }
 
 
-    private ArrayList<String> get_suspicious_players(){
-        int min_failed_missions = 2;
-        ArrayList<ArrayList<String>> failed_teams = get_failed_teams();
-        HashMap<String, Integer> player_fail_map = new HashMap<String, Integer>();
-
-        // Generate a mapping of players to how many times they have been in a failed mission
-        for(ArrayList<String> team : failed_teams){
-            for(String player : team){
-                player_fail_map.put(player, player_fail_map.getOrDefault(player, 0) + 1);
-            }
-        }
-
-        // Build a list of the players ordered by most failed missions,
-        // with at least 'min_failed_missions' failed missions
-        ArrayList<String> suspicious_players = new ArrayList<String>();
-        String suspicious_player = get_highest_key(player_fail_map);
-        while(suspicious_player != "" && player_fail_map.get(suspicious_player) >= min_failed_missions){
-            suspicious_players.add(suspicious_player);
-            player_fail_map.remove(suspicious_player);
-            suspicious_player = get_highest_key(player_fail_map);
-        }
-        return suspicious_players;
-    }
-
     /**
      * Nominates a group of agents to go on a mission.
      * If the String does not correspond to a legitimate mission (<i>number</i> of distinct agents, in a String),
@@ -312,5 +288,29 @@ public class ExpertAgent implements Agent{
                 return true;
         }
         return false;
+    }
+
+    private ArrayList<String> get_suspicious_players(){
+        int min_failed_missions = 2;
+        ArrayList<ArrayList<String>> failed_teams = get_failed_teams();
+        HashMap<String, Integer> player_fail_map = new HashMap<String, Integer>();
+
+        // Generate a mapping of players to how many times they have been in a failed mission
+        for(ArrayList<String> team : failed_teams){
+            for(String player : team){
+                player_fail_map.put(player, player_fail_map.getOrDefault(player, 0) + 1);
+            }
+        }
+
+        // Build a list of the players ordered by most failed missions,
+        // with at least 'min_failed_missions' failed missions
+        ArrayList<String> suspicious_players = new ArrayList<String>();
+        String suspicious_player = get_highest_key(player_fail_map);
+        while(suspicious_player != "" && player_fail_map.get(suspicious_player) >= min_failed_missions){
+            suspicious_players.add(suspicious_player);
+            player_fail_map.remove(suspicious_player);
+            suspicious_player = get_highest_key(player_fail_map);
+        }
+        return suspicious_players;
     }
 }
