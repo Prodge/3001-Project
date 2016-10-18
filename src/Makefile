@@ -1,7 +1,8 @@
-MAIN_CLASS=Game
-RUNTME_FLAGS= -classpath ".:sqlite-jdbc-3.14.2.1.jar"
+MAIN_CLASS=Runner
+RUNTME_FLAGS= -Djava.ext.dirs=../deps
 OUTPUT_DIR=./class
 COMPILE_FLAGS=-Werror
+PROGRAM_ARGS=
 
 compile: $(OUTPUT_DIR)/$(MAIN_CLASS).class
 
@@ -12,10 +13,7 @@ $(OUTPUT_DIR):
 	mkdir $(OUTPUT_DIR)
 
 run: $(OUTPUT_DIR)/$(MAIN_CLASS).class
-	cd $(OUTPUT_DIR); java $(RUNTME_FLAGS) $(MAIN_CLASS)
-
-copy-deps: $(OUTPUT_DIR)
-	cp deps/* $(OUTPUT_DIR)/
+	cd $(OUTPUT_DIR); java $(RUNTME_FLAGS) $(MAIN_CLASS) $(PROGRAM_ARGS)
 
 clean:
 	rm -rf $(OUTPUT_DIR)
