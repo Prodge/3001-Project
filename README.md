@@ -26,4 +26,10 @@ If at least 3 missions succeed, the resistance wins. Otherwise the government wi
 Rules will be added here for the AI bots. They must implement the provided agent interface, and we will add restrictions for the amount of computation, and system resources they can use.
 We will also develop a points mechanism to encourage creative play.
 
+# Using the Runner
 
+`./build [# of games] [# of expert agents] [# of random agents] [# of learning agents] [who the spies are]` 
+
+* The total number of agents must be between 5-10.
+* Who the spies are should match the following `expert OR random OR learning`
+* Please make sure the team who will be the spies has the minimum number of spies
