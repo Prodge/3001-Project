@@ -74,7 +74,7 @@ public class LearningAgent implements Agent{
         current_mission_propositions = new HistoryList<ArrayList<String>>();
 
         // If this isn't the start of the game, update the database with the results from the last round
-        if(traitors_list.is_empty()){
+        if(current_mission != 0){
             db.update_database((spy && traitors_list.get_latest_value() > 0) || (!spy && traitors_list.get_latest_value() == 0));
         }
     }

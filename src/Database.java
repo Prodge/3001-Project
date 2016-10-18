@@ -9,7 +9,7 @@ public class Database{
         initialise_database();
     }
 
-    private void executeCreateQuery(Connection con, String query) throws SQLException {
+    private void executeCUDQuery(Connection con, String query) throws SQLException {
         Statement stmt = null;
         try {
             stmt = con.createStatement();
@@ -50,7 +50,7 @@ public class Database{
             stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next())
-                row_set.add(new DatabaseRecord(rs.getInt(1), rs.getFloat(2), rs.getInt(3), rs.getInt(4)));
+                row_set.add(new DatabaseRecord(rs.getInt(1), rs.getDouble(2), rs.getInt(3), rs.getInt(4)));
         } catch (SQLException e){
             printSQLException(e);
         } finally{
@@ -102,12 +102,26 @@ public class Database{
                 query +=
                     "create table " + table_name +
                     "(ID INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    "value REAL NOT NULL," +
+                    "value DOUBLE NOT NULL," +
                     "success INT NOT NULL," +
                     "fail INT NOT NULL);\n"
                 ;
             }
-            executeCreateQuery(con, query);
+            executeCUDQuery(con, query);
+        } catch (SQLException e) {
+            printSQLException(e);
+        }
+    }
+
+    private void populate_tables(Connection con) throws SQLException {
+        try{
+            String query = "";
+            for(String table_name : tables){
+                for(double i=0.0; i<=1; i+=0.01){
+                    query += "insert into " + table_name + " (value, success, fail) VALUES (" + Double.toString(i) + ", 0, 0);\n";
+                }
+            }
+            executeCUDQuery(con, query);
         } catch (SQLException e) {
             printSQLException(e);
         }
@@ -123,8 +137,10 @@ public class Database{
         try {
             Class.forName("org.sqlite.JDBC");
             Connection c = DriverManager.getConnection("jdbc:sqlite:" + database_name);
-            if (!database_tables_exists(c))
+            if (!database_tables_exists(c)){
                 create_database_tables(c);
+                populate_tables(c);
+            }
             c.close();
         } catch (SQLException e) {
             printSQLException(e);

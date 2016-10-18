@@ -3,4 +3,4 @@
 echo "########### ############ ############"
 make clean
 clear;
-time make run PROGRAM_ARGS="$1 $2 $3 $4"
+time make run PROGRAM_ARGS="$1 $2 $3 $4 $5"
