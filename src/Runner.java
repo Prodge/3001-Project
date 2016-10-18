@@ -22,7 +22,7 @@ public class Runner {
 
         // Create expert agents
         for (int i=0; i<expert_agents; i++){
-            g.stopwatchOn();g.addPlayer(new ExpertAgent());g.stopwatchOff(1000, (char) (expert_starting_char + i));
+            g.stopwatchOn();g.addPlayer(new LearningAgent());g.stopwatchOff(1000, (char) (expert_starting_char + i));
         }
 
         // Create random agents

@@ -39,7 +39,7 @@ public class LearningAgent implements Agent{
 
         db = new Database();
 
-        if(db.is_empty()){
+        if(db.empty_database()){
             // Default values when we have an empty database
             accuse_as_spy_chance = 0.5;
             betray_base_factor = 0.25;
