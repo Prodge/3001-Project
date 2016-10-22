@@ -16,4 +16,4 @@ run: $(OUTPUT_DIR)/$(MAIN_CLASS).class
 	cd $(OUTPUT_DIR); java $(RUNTME_FLAGS) $(MAIN_CLASS) $(PROGRAM_ARGS)
 
 clean:
-	rm -rf $(OUTPUT_DIR)
+	rm -rf $(OUTPUT_DIR)/*.class
