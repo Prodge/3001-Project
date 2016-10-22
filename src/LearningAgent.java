@@ -39,14 +39,7 @@ public class LearningAgent implements Agent{
 
         db = new Database();
 
-        if(db.empty_database()){
-            // Default values when we have an empty database
-            accuse_as_spy_chance = 0.5;
-            betray_base_factor = 0.25;
-        }else{
-            accuse_as_spy_chance = db.get_new_value("accuse_as_spy_chance");
-            betray_base_factor = db.get_new_value("betray_base_factor");
-        }
+        update_variables();
     }
 
 
@@ -76,7 +69,13 @@ public class LearningAgent implements Agent{
         // If this isn't the start of the game, update the database with the results from the last round
         if(current_mission != 0){
             db.update_database((spy && traitors_list.get_latest_value() > 0) || (!spy && traitors_list.get_latest_value() == 0));
+            update_variables();
         }
+    }
+
+    private void update_variables(){
+        accuse_as_spy_chance = db.get_new_value("accuse_as_spy_chance");
+        betray_base_factor = db.get_new_value("betray_base_factor");
     }
 
 
