@@ -98,7 +98,7 @@ public class LearningAgent implements Agent{
             nominations.add(name);
 
             // Now add any non suspicious players
-            ArrayList<String> non_suspicious_players = players;
+            ArrayList<String> non_suspicious_players = new ArrayList<String>(players);
             non_suspicious_players.removeAll(suspicious_players);
             while(nominations.size() != number && non_suspicious_players.size() !=0){
                 nominations.add(non_suspicious_players.get(0));
@@ -118,7 +118,6 @@ public class LearningAgent implements Agent{
         HashMap<String, Integer> accusation_map = accusations.get_accusation_map();
         ArrayList<String> non_accused = accusations.get_non_accused(players);
         while(nominations.size() != number){
-            System.out.println(nominations.size() +"  "+ number);
             // If we have non accused players add them first
             if(non_accused.size() != 0){
                 if(!nominations.contains(non_accused.get(0))){
@@ -129,10 +128,10 @@ public class LearningAgent implements Agent{
             // Otherwise add the players with the lowest number of accusations
             }else{
                 String least_accused = get_lowest_key(accusation_map);
-                accusation_map.remove(least_accused);
                 if(!nominations.contains(least_accused)){
                     nominations.add(least_accused);
                 }
+                accusation_map.remove(least_accused);
             }
         }
         return String.join("", nominations);
