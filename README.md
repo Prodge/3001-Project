@@ -28,8 +28,13 @@ We will also develop a points mechanism to encourage creative play.
 
 # Using the Runner
 
-`./build [# of games] [# of expert agents] [# of random agents] [# of learning agents] [who the spies are]` 
+`./build [# of games] [# of expert agents] [# of random agents] [# of learning agents] [who the spies are]`
 
 * The total number of agents must be between 5-10.
 * Who the spies are should match the following `expert OR random OR learning`
 * Please make sure the team who will be the spies has the minimum number of spies
+
+# Plot graphs
+
+1. Install `sudo apt-get install gnuplot` or `sudo pacman -S gnuplot`
+2. Run the plots by `gnuplot -e graphing.plg`
