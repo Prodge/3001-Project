@@ -180,45 +180,67 @@ public class Database{
             ArrayList<DatabaseRecord> rows = get_table(variable);
             DatabaseRecord best_row = get_highest_success_ratio(rows);
 
-
-            //GUARD AGAINST INVALID INDEXES
-            if(best_row.id==1){
-                return rows.get((int) Math.round(best_row.value*100) + 1).value;
-            }
-            if(best_row.id==101){
-                return rows.get((int) Math.round(best_row.value*100) - 1).value;
-            }
-
-            // Look at the rows on either side
-            DatabaseRecord left = rows.get((int) Math.round(best_row.value*100) - 1);
-            DatabaseRecord right = rows.get((int) Math.round(best_row.value*100) + 1);
-
-            double highest_value;
-            double lowest_value;
-            if(get_success_ratio(left) > get_success_ratio(right)){
-                highest_value = left.value;
-                lowest_value = right.value;
+            // 30% of the time, jump randomly left or right up to 5 indexes from the currently considered 'best' index
+            if(Math.random() < 0.3){
+                //GUARD AGAINST INVALID INDEXES
+                if(best_row.id < 5 || best_row.id > 95){
+                    if(best_row.id < 5){
+                        last_values.put(variable, rows.get((int) Math.round(best_row.value*100) + 5).value);
+                    }
+                    if(best_row.id > 95){
+                        last_values.put(variable, rows.get((int) Math.round(best_row.value*100) - 5).value);
+                    }
+                }else{
+                    if(Math.random() < 0.5){
+                        last_values.put(variable, rows.get((int) Math.round(best_row.value*100) + ((int) (Math.random() * 5))).value);
+                    }else{
+                        last_values.put(variable, rows.get((int) Math.round(best_row.value*100) - ((int) (Math.random() * 5))).value);
+                    }
+                }
             }else{
-                highest_value = right.value;
-                lowest_value = left.value;
-            }
 
-            //If one of the rows success value was 0, set this to the highest value as we havent explored yet
-            if(get_success_ratio(left) == 0.0){
-                highest_value = left.value;
-                lowest_value = right.value;
-            }
+                //GUARD AGAINST INVALID INDEXES
+                if(best_row.id == 1 || best_row.id == 101){
+                    if(best_row.id==1){
+                        last_values.put(variable, rows.get((int) Math.round(best_row.value*100) + 1).value);
+                    }
+                    if(best_row.id==101){
+                        last_values.put(variable, rows.get((int) Math.round(best_row.value*100) - 1).value);
+                    }
+                }else{
 
-            if(get_success_ratio(right) == 0.0){
-                highest_value = right.value;
-                lowest_value = left.value;
-            }
+                    // Look at the rows on either side
+                    DatabaseRecord left = rows.get((int) Math.round(best_row.value*100) - 1);
+                    DatabaseRecord right = rows.get((int) Math.round(best_row.value*100) + 1);
 
-            // Take the side with the higher success ratio 80% of the time
-            if(Math.random() < 0.8){
-                last_values.put(variable, highest_value);
-            }else{
-                last_values.put(variable, lowest_value);
+                    double highest_value;
+                    double lowest_value;
+                    if(get_success_ratio(left) > get_success_ratio(right)){
+                        highest_value = left.value;
+                        lowest_value = right.value;
+                    }else{
+                        highest_value = right.value;
+                        lowest_value = left.value;
+                    }
+
+                    //If one of the rows success value was 0, set this to the highest value as we havent explored yet
+                    if(get_success_ratio(left) == 0.0){
+                        highest_value = left.value;
+                        lowest_value = right.value;
+                    }
+
+                    if(get_success_ratio(right) == 0.0){
+                        highest_value = right.value;
+                        lowest_value = left.value;
+                    }
+
+                    // Take the side with the higher success ratio 80% of the time
+                    if(Math.random() < 0.8){
+                        last_values.put(variable, highest_value);
+                    }else{
+                        last_values.put(variable, lowest_value);
+                    }
+                }
             }
         }
         return last_values.get(variable);
