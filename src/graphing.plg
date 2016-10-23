@@ -2,4 +2,4 @@ set title "Learning Graph"
 set xlabel "Total Games"
 set ylabel "Total Wins - Total Losses"
 filelist = system("ls class/*file.txt")
-plot for [filename in filelist] filename using 1:2 smooth bezier
+plot for [filename in filelist] filename using 1:2 title filename smooth bezier
