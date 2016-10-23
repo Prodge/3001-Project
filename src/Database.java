@@ -3,7 +3,7 @@ import java.sql.*;
 
 public class Database{
     private String database_name = "history.db";
-    private List<String> tables = Arrays.asList("accuse_as_spy_chance", "betray_base_factor");
+    private List<String> tables = Arrays.asList("accuse_as_spy_chance", "betray_base_factor", "nominate_spy_when_spy_chance");
     private HashMap<String, Double> last_values = new HashMap<String, Double>();
 
     public Database(){
@@ -162,6 +162,18 @@ public class Database{
         }
     }
 
+    private void set_default_last_value(String variable){
+        switch (variable){
+            // Default values when we have an empty database
+            case "accuse_as_spy_chance": last_values.put(variable, 0.5);
+                                         break;
+            case "betray_base_factor": last_values.put(variable, 0.35);
+                                         break;
+            case "nominate_spy_when_spy_chance": last_values.put(variable, 0.8);
+                                         break;
+        }
+    }
+
     /**
      * Searches the database for the optimal value for the given variable
      * @param variable maps to the table name in the database
@@ -169,80 +181,80 @@ public class Database{
      */
     public double get_new_value(String variable){
         if(empty_database()){
-            switch (variable){
-                // Default values when we have an empty database
-                case "accuse_as_spy_chance": last_values.put(variable, 0.5);
-                                             break;
-                case "betray_base_factor": last_values.put(variable, 0.25);
-                                             break;
-            }
+            set_default_last_value(variable);
         }else{
             ArrayList<DatabaseRecord> rows = get_table(variable);
             DatabaseRecord best_row = get_highest_success_ratio(rows);
 
-            // 30% of the time, jump randomly left or right up to 5 indexes from the currently considered 'best' index
-            if(Math.random() < 0.3){
-                //GUARD AGAINST INVALID INDEXES
-                if(best_row.id < 5 || best_row.id > 95){
-                    if(best_row.id < 5){
-                        last_values.put(variable, rows.get((int) Math.round(best_row.value*100) + 5).value);
-                    }
-                    if(best_row.id > 95){
-                        last_values.put(variable, rows.get((int) Math.round(best_row.value*100) - 5).value);
-                    }
-                }else{
-                    if(Math.random() < 0.5){
-                        last_values.put(variable, rows.get((int) Math.round(best_row.value*100) + ((int) (Math.random() * 5))).value);
-                    }else{
-                        last_values.put(variable, rows.get((int) Math.round(best_row.value*100) - ((int) (Math.random() * 5))).value);
-                    }
-                }
+            if(get_success_ratio(best_row) == 0.0){
+                set_default_last_value(variable);
             }else{
 
-                //GUARD AGAINST INVALID INDEXES
-                if(best_row.id == 1 || best_row.id == 101){
-                    if(best_row.id==1){
-                        last_values.put(variable, rows.get((int) Math.round(best_row.value*100) + 1).value);
-                    }
-                    if(best_row.id==101){
-                        last_values.put(variable, rows.get((int) Math.round(best_row.value*100) - 1).value);
+                // 30% of the time, jump randomly left or right up to 5 indexes from the currently considered 'best' index
+                if(Math.random() < 0.3){
+                    //GUARD AGAINST INVALID INDEXES
+                    if(best_row.id < 5 || best_row.id > 95){
+                        if(best_row.id < 5){
+                            last_values.put(variable, rows.get((int) Math.round(best_row.value*100) + 5).value);
+                        }
+                        if(best_row.id > 95){
+                            last_values.put(variable, rows.get((int) Math.round(best_row.value*100) - 5).value);
+                        }
+                    }else{
+                        if(Math.random() < 0.5){
+                            last_values.put(variable, rows.get((int) Math.round(best_row.value*100) + ((int) (Math.random() * 5))).value);
+                        }else{
+                            last_values.put(variable, rows.get((int) Math.round(best_row.value*100) - ((int) (Math.random() * 5))).value);
+                        }
                     }
                 }else{
 
-                    // Look at the rows on either side
-                    DatabaseRecord left = rows.get((int) Math.round(best_row.value*100) - 1);
-                    DatabaseRecord right = rows.get((int) Math.round(best_row.value*100) + 1);
-
-                    double highest_value;
-                    double lowest_value;
-                    if(get_success_ratio(left) > get_success_ratio(right)){
-                        highest_value = left.value;
-                        lowest_value = right.value;
+                    //GUARD AGAINST INVALID INDEXES
+                    if(best_row.id == 1 || best_row.id == 101){
+                        if(best_row.id==1){
+                            last_values.put(variable, rows.get((int) Math.round(best_row.value*100) + 1).value);
+                        }
+                        if(best_row.id==101){
+                            last_values.put(variable, rows.get((int) Math.round(best_row.value*100) - 1).value);
+                        }
                     }else{
-                        highest_value = right.value;
-                        lowest_value = left.value;
-                    }
 
-                    //If one of the rows success value was 0, set this to the highest value as we havent explored yet
-                    if(get_success_ratio(left) == 0.0){
-                        highest_value = left.value;
-                        lowest_value = right.value;
-                    }
+                        // Look at the rows on either side
+                        DatabaseRecord left = rows.get((int) Math.round(best_row.value*100) - 1);
+                        DatabaseRecord right = rows.get((int) Math.round(best_row.value*100) + 1);
 
-                    if(get_success_ratio(right) == 0.0){
-                        highest_value = right.value;
-                        lowest_value = left.value;
-                    }
+                        double highest_value;
+                        double lowest_value;
+                        if(get_success_ratio(left) > get_success_ratio(right)){
+                            highest_value = left.value;
+                            lowest_value = right.value;
+                        }else{
+                            highest_value = right.value;
+                            lowest_value = left.value;
+                        }
 
-                    // Take the side with the higher success ratio 80% of the time
-                    if(Math.random() < 0.8){
-                        last_values.put(variable, highest_value);
-                    }else{
-                        last_values.put(variable, lowest_value);
+                        //If one of the rows success value was 0, set this to the highest value as we havent explored yet
+                        if(get_success_ratio(left) == 0.0){
+                            highest_value = left.value;
+                            lowest_value = right.value;
+                        }
+
+                        if(get_success_ratio(right) == 0.0){
+                            highest_value = right.value;
+                            lowest_value = left.value;
+                        }
+
+                        // Take the side with the higher success ratio 80% of the time
+                        if(Math.random() < 0.8){
+                            last_values.put(variable, highest_value);
+                        }else{
+                            last_values.put(variable, lowest_value);
+                        }
                     }
                 }
             }
         }
+        System.out.println("returning value: " + last_values.get(variable));
         return last_values.get(variable);
 
         // This slight bit of randomness prevents the agent from getting stuck

@@ -25,6 +25,7 @@ public class LearningAgent implements Agent{
 
     private double betray_base_factor;
     private double accuse_as_spy_chance;
+    private double nominate_spy_when_spy_chance;
     private Database db;
 
     public LearningAgent(){
@@ -76,6 +77,7 @@ public class LearningAgent implements Agent{
     private void update_variables(){
         accuse_as_spy_chance = db.get_new_value("accuse_as_spy_chance");
         betray_base_factor = db.get_new_value("betray_base_factor");
+        nominate_spy_when_spy_chance = db.get_new_value("nominate_spy_when_spy_chance");
     }
 
 
@@ -103,8 +105,10 @@ public class LearningAgent implements Agent{
                 non_suspicious_players.remove(0);
             }
         }else{
-            // If we are a spy, nominate a random spy to go on the mission each time
-            nominations.add(spy_list.get((int) (Math.random() * spy_list.size())));
+            // If we are a spy, nominate a random spy to go on the mission each time - a certain percentage of the time
+            if(Math.random() > nominate_spy_when_spy_chance){
+                nominations.add(spy_list.get((int) (Math.random() * spy_list.size())));
+            }
         }
 
         // Fill the rest of our nominations with least accused players.
