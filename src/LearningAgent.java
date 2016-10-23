@@ -25,6 +25,7 @@ public class LearningAgent implements Agent{
 
     private double betray_base_factor;
     private double accuse_as_spy_chance;
+    private double nominate_spy_when_spy_chance;
     private Database db;
 
     public LearningAgent(){
@@ -39,14 +40,7 @@ public class LearningAgent implements Agent{
 
         db = new Database();
 
-        if(db.empty_database()){
-            // Default values when we have an empty database
-            accuse_as_spy_chance = 0.5;
-            betray_base_factor = 0.25;
-        }else{
-            accuse_as_spy_chance = db.get_new_value("accuse_as_spy_chance");
-            betray_base_factor = db.get_new_value("betray_base_factor");
-        }
+        update_variables();
     }
 
 
@@ -76,7 +70,14 @@ public class LearningAgent implements Agent{
         // If this isn't the start of the game, update the database with the results from the last round
         if(current_mission != 0){
             db.update_database((spy && traitors_list.get_latest_value() > 0) || (!spy && traitors_list.get_latest_value() == 0));
+            update_variables();
         }
+    }
+
+    private void update_variables(){
+        accuse_as_spy_chance = db.get_new_value("accuse_as_spy_chance");
+        betray_base_factor = db.get_new_value("betray_base_factor");
+        nominate_spy_when_spy_chance = db.get_new_value("nominate_spy_when_spy_chance");
     }
 
 
@@ -104,8 +105,10 @@ public class LearningAgent implements Agent{
                 non_suspicious_players.remove(0);
             }
         }else{
-            // If we are a spy, nominate a random spy to go on the mission each time
-            nominations.add(spy_list.get((int) (Math.random() * spy_list.size())));
+            // If we are a spy, nominate a random spy to go on the mission each time - a certain percentage of the time
+            if(Math.random() > nominate_spy_when_spy_chance){
+                nominations.add(spy_list.get((int) (Math.random() * spy_list.size())));
+            }
         }
 
         // Fill the rest of our nominations with least accused players.
