@@ -17,3 +17,7 @@ run: $(OUTPUT_DIR)/$(MAIN_CLASS).class
 
 clean:
 	rm -rf $(OUTPUT_DIR)/*.class
+
+clean-other-files:
+	rm -rf $(OUTPUT_DIR)/*file.txt
+	rm -rf $(OUTPUT_DIR)/*.db
