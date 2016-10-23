@@ -254,7 +254,6 @@ public class Database{
                 }
             }
         }
-        System.out.println("returning value: " + last_values.get(variable));
         return last_values.get(variable);
 
         // This slight bit of randomness prevents the agent from getting stuck
