@@ -14,6 +14,7 @@ public class LearningAgent implements Agent{
     private ArrayList<String> players;
     private ArrayList<String> spy_list;
     private HistoryList<ArrayList<String>> current_mission_propositions;
+    private HashMap<String, Float> suspection;
 
     // History
     private AccusationList accusations;
@@ -31,6 +32,7 @@ public class LearningAgent implements Agent{
     public LearningAgent(){
         players = new ArrayList<String>();
         spy_list = new ArrayList<String>();
+        suspection = new HashMap<String, Float>();
         accusations = new AccusationList();
         mission_vote_list = new HistoryList<ArrayList<String>>();
         players_mission_list  = new HistoryList<ArrayList<String>>();
@@ -58,7 +60,7 @@ public class LearningAgent implements Agent{
     public void get_status(String name, String players, String spies, int mission, int failures){
         this.name = name;
         this.players = new ArrayList<String>(Arrays.asList(players.split(string_delimenator)));
-        current_mission = mission - 1;
+        current_mission = mission;
         spy = spies.indexOf(name) != -1; // Checking if we are a spy
         spies = spy ? spies : "";
         spy_list = new ArrayList<String>(Arrays.asList(spies.split(string_delimenator)));
@@ -67,19 +69,16 @@ public class LearningAgent implements Agent{
         mission_propositions_list.add(current_mission-1, current_mission_propositions);
         current_mission_propositions = new HistoryList<ArrayList<String>>();
 
+        if(current_mission == 1){
+            suspection = createSuspectionList();
+        }
+
         // If this isn't the start of the game, update the database with the results from the last round
-        if(current_mission != 0){
+        if(current_mission != 1){
             db.update_database((spy && traitors_list.get_latest_value() > 0) || (!spy && traitors_list.get_latest_value() == 0));
             update_variables();
         }
     }
-
-    private void update_variables(){
-        accuse_as_spy_chance = db.get_new_value("accuse_as_spy_chance");
-        betray_base_factor = db.get_new_value("betray_base_factor");
-        nominate_spy_when_spy_chance = db.get_new_value("nominate_spy_when_spy_chance");
-    }
-
 
     /**
      * Nominates a group of agents to go on a mission.
@@ -90,51 +89,20 @@ public class LearningAgent implements Agent{
      * @return a String containing the names of all the agents in a mission
      * */
     public String do_Nominate(int number){
-        ArrayList<String> nominations = new ArrayList<String>();
-        ArrayList<String> suspicious_players = get_suspicious_players();
-
-        if(!spy){
-            // if you are resistance, always send yourself
-            nominations.add(name);
-
-            // Now add any non suspicious players
-            ArrayList<String> non_suspicious_players = new ArrayList<String>(players);
-            non_suspicious_players.removeAll(suspicious_players);
-            while(nominations.size() != number && non_suspicious_players.size() !=0){
-                nominations.add(non_suspicious_players.get(0));
-                non_suspicious_players.remove(0);
-            }
-        }else{
+        if (spy){
+            ArrayList<String> nominations = new ArrayList<String>();
             // If we are a spy, nominate a random spy to go on the mission each time - a certain percentage of the time
             if(Math.random() > nominate_spy_when_spy_chance){
                 nominations.add(spy_list.get((int) (Math.random() * spy_list.size())));
             }
-        }
-
-        // Fill the rest of our nominations with least accused players.
-        // If we are a spy we have already nominated a spy to go on the mission,
-        // we don't want more than one spy on each mission as it is easy to spot a pattern.
-        // If we are not a spy, this is a relativley safe way to order players in suspiciousness.
-        HashMap<String, Integer> accusation_map = accusations.get_accusation_map();
-        ArrayList<String> non_accused = accusations.get_non_accused(players);
-        while(nominations.size() != number){
-            // If we have non accused players add them first
-            if(non_accused.size() != 0){
-                if(!nominations.contains(non_accused.get(0))){
-                    nominations.add(non_accused.get(0));
-                }
-                non_accused.remove(0);
-
-            // Otherwise add the players with the lowest number of accusations
-            }else{
-                String least_accused = get_lowest_key(accusation_map);
-                if(!nominations.contains(least_accused)){
-                    nominations.add(least_accused);
-                }
-                accusation_map.remove(least_accused);
+            for (String player : suspection.keySet()){
+                if (suspection.get(player) == 0.0f)
+                    nominations.add(player);
+                if (nominations.size() == number) break;
             }
+            return String.join("", nominations);
         }
-        return String.join("", nominations);
+        return String.join("", getMostTrustableTeam(number));
     }
 
     /**
@@ -155,25 +123,27 @@ public class LearningAgent implements Agent{
      * @return true, if the agent votes for the mission, false, if they vote against it.
      * */
     public boolean do_Vote(){
-        // As a spy, vote for all missions that include one spy
-        if (spy)
-            return spy_in_team(current_mission_propositions.get_latest_value(), spy_list);
         // Always approve our own missions
-        if (leader_list.get_latest_value() == name)
+        if (Objects.equals(leader_list.get_latest_value(), name))
             return true;
-        // As resistance, always pass the last round
-        if (current_mission == 5)
-            return true;
-        // If there is a known spy on the team
-        if (spy_in_team(current_mission_propositions.get_latest_value(), get_suspicious_players()))
-            return false;
-        // If current team has a subset of past failed teams
-        if (is_subset_of_team(current_mission_propositions.get_latest_value(), get_failed_teams()))
-            return false;
-        // If I'm not on the team and its a team of 3
+
+        // As a spy only approve if there is a spy in the misssion
+        if (spy){
+            if (Util.spy_in_team(current_mission_propositions.get_latest_value(), spy_list))
+                return true;
+            else
+                return false;
+        }
+
+        // If I'm not on the team and its a team of 3 then it is likely there is a spy in the mission
         if (current_mission_propositions.get_latest_value().size() == 3 && !current_mission_propositions.get_latest_value().contains(name))
             return false;
-        // Otherwise just approve the team
+
+        // If any players in the team have a suspicon level greater than the threshold then disapprove mission
+        for (String player : current_mission_propositions.get_latest_value())
+            if (suspection.get(player) > 0.1f)
+                return false;
+
         return true;
     }
 
@@ -199,16 +169,25 @@ public class LearningAgent implements Agent{
      * @return true if agent betrays, false otherwise
      **/
     public boolean do_Betray(){
-        if(!spy){
+        // If we are not a spy then never betray
+        if(!spy)
             return false;
-        }
 
         int mission_size = players_mission_list.get_latest_value().size();
 
         // Do not betray if we are the only player on the mission
-        if(mission_size == 1){
+        if(mission_size == 1)
             return false;
-        }
+
+        ArrayList<String> spyteam = getNumberOfSpiesInTeam(players_mission_list.get_latest_value());
+
+        // When spy, if have already failed 2 missions then betray to win the game
+        if (total_failures == 2)
+            return true;
+
+        // When spy, if have not won anything and there is a resistance memeber in the team then betray without getting caught
+        if (total_wins == 2 && spyteam.size() < mission_size)
+            return true;
 
         // Higher odds of betraying when the mission contains a larger number of players
         return ((((double) mission_size / players.size()) * (1 - betray_base_factor)) + betray_base_factor > Math.random());
@@ -220,6 +199,7 @@ public class LearningAgent implements Agent{
      **/
     public void get_Traitors(int traitors){
         traitors_list.add(current_mission, traitors);
+        adjustSuspectionList();
     }
 
     /**
@@ -233,10 +213,10 @@ public class LearningAgent implements Agent{
         // If I am a spy, accuse the most frequently previously accused non spy 50% of the time
         if(spy && Math.random() > accuse_as_spy_chance){
             HashMap<String, Integer> accusation_map = accusations.get_accusation_map();
-            String most_accused = get_highest_key(accusation_map);
+            String most_accused = Util.get_highest_key(accusation_map);
             while(spy_list.contains(most_accused)){
                 accusation_map.remove(most_accused);
-                most_accused = get_highest_key(accusation_map);
+                most_accused = Util.get_highest_key(accusation_map);
             }
             return most_accused;
         }
@@ -257,84 +237,139 @@ public class LearningAgent implements Agent{
         accusations.add_accusation(accuser, accused, string_delimenator);
     }
 
-    //////////////////////
-    // Helper Functions //
-    /////////////////////
+    /////////////////////////////////////////
+    // P R I V A T E    F U N C T I O N S //
+    ////////////////////////////////////////
 
-    private String get_lowest_key(HashMap<String, Integer> map){
-        String key = "";
-        int lowest_value = -1;
-        Iterator<Map.Entry<String, Integer>> it = map.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Integer> pair = it.next();
-            if(lowest_value == -1 || pair.getValue() < lowest_value){
-                key = pair.getKey();
-                lowest_value = pair.getValue();
+    /*
+     *
+     */
+    private void update_variables(){
+        accuse_as_spy_chance = db.get_new_value("accuse_as_spy_chance");
+        betray_base_factor = db.get_new_value("betray_base_factor");
+        nominate_spy_when_spy_chance = db.get_new_value("nominate_spy_when_spy_chance");
+    }
+
+    /*
+     * Create list of suspicous people
+     */
+    private HashMap<String, Float> createSuspectionList(){
+        HashMap<String, Float> slist = new HashMap<String, Float>();
+        if (spy) {
+            // As a spy i know everything
+            for (String player : players){
+                if (spy_list.contains(player)){
+                    slist.put(player, 1.0f);
+                }else{
+                    slist.put(player, 0.0f);
+                }
+            }
+        } else {
+            // As resistance
+            for (String player : players){
+                if (Objects.equals(name, player)){
+                    slist.put(player, 0.0f);
+                }else{
+                    slist.put(player, 0.5f); // initial suspicison
+                }
             }
         }
-        return key;
+        return slist;
     }
 
-    private String get_highest_key(HashMap<String, Integer> map){
-        String key = "";
-        int highest_value = -1;
-        Iterator<Map.Entry<String, Integer>> it = map.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Integer> pair = it.next();
-            if(highest_value == -1 || pair.getValue() > highest_value){
-                key = pair.getKey();
-                highest_value = pair.getValue();
+    /*
+     * Increase suspection of player
+     */
+    private void increaseSuspection(String player){
+        if(!Objects.equals(player, name)){
+            suspection.put(player, suspection.get(player) + 0.35f);
+        }
+    }
+
+    /*
+     * Decrease suspection of player
+     */
+    private void decreaseSuspection(String player){
+        if(!Objects.equals(player, name)){
+            suspection.put(player, suspection.get(player) - 0.25f);
+            if (suspection.get(player) < 0.0f){
+                suspection.put(player, 0.0f);
             }
         }
-        return key;
     }
 
-    private boolean spy_in_team(ArrayList<String> team, ArrayList<String> spies){
-        for (String player : spies){
-            if (team.contains(player)) return true;
-        }
-        return false;
-    }
-
-    private ArrayList<ArrayList<String>> get_failed_teams(){
-        ArrayList<ArrayList<String>> failed_teams = new ArrayList<ArrayList<String>>();
-        for (int i=1; i<current_mission; i++)
-            if (traitors_list.get_value_for_key(i) > 0)
-                failed_teams.add(players_mission_list.get_value_for_key(i));
-        return failed_teams;
-    }
-
-    private boolean is_subset_of_team(ArrayList<String> team, ArrayList<ArrayList<String>> team_list){
-        for (ArrayList<String> t : team_list){
-            ArrayList<String> match = t;
-            match.retainAll(team);
-            if (match.size() > 0)
-                return true;
-        }
-        return false;
-    }
-
-    private ArrayList<String> get_suspicious_players(){
-        int min_failed_missions = 2;
-        ArrayList<ArrayList<String>> failed_teams = get_failed_teams();
-        HashMap<String, Integer> player_fail_map = new HashMap<String, Integer>();
-
-        // Generate a mapping of players to how many times they have been in a failed mission
-        for(ArrayList<String> team : failed_teams){
-            for(String player : team){
-                player_fail_map.put(player, player_fail_map.getOrDefault(player, 0) + 1);
+    /*
+     * Adjust way I think about other players
+     */
+    private void adjustSuspectionList(){
+        // If spy don't do anything as everything is known
+        if (!spy){
+            // If mission was not sabtoaged then increase trust
+            if (traitors_list.get_latest_value() == 0){
+                for (String player : players_mission_list.get_latest_value()){
+                    decreaseSuspection(player);
+                }
+            // If everyone in the team sabotaged the mission then everyone is a spy
+            }else if (traitors_list.get_latest_value() == players_mission_list.get_latest_value().size()){
+                for (String player : players_mission_list.get_latest_value()){
+                    suspection.put(player, 10.0f);
+                }
+            // the mission was sabotaged and there were 2 in the mission and i was one of them
+            }else if (players_mission_list.get_latest_value().size() == 2 && players_mission_list.get_latest_value().contains(name)){
+                ArrayList<String> other = new ArrayList<String>(players_mission_list.get_latest_value());
+                other.remove(other.indexOf(name));
+                suspection.put(other.get(0), 10.0f);
+            // the mission was sabotaged and we are part of a big team so dont trust the others
+            }else if (players_mission_list.get_latest_value().size() > 2 && players_mission_list.get_latest_value().contains(name)){
+                ArrayList<String> other = new ArrayList<String>(players_mission_list.get_latest_value());
+                other.remove(other.indexOf(name));
+                for (String player : other){
+                    increaseSuspection(player);
+                }
+            }
+            // Misssion was sabotaged and we dont know who went so dont trust anyone
+            for (String player : players_mission_list.get_latest_value()){
+                increaseSuspection(player);
             }
         }
-
-        // Build a list of the players ordered by most failed missions,
-        // with at least 'min_failed_missions' failed missions
-        ArrayList<String> suspicious_players = new ArrayList<String>();
-        String suspicious_player = get_highest_key(player_fail_map);
-        while(suspicious_player != "" && player_fail_map.get(suspicious_player) >= min_failed_missions){
-            suspicious_players.add(suspicious_player);
-            player_fail_map.remove(suspicious_player);
-            suspicious_player = get_highest_key(player_fail_map);
-        }
-        return suspicious_players;
     }
+
+    /*
+     *
+     */
+    private ArrayList<String> getMostTrustableTeam(int count){
+        ArrayList<String> trust_team = new ArrayList<String>();
+
+        float[] sorted_suspicion_values = new float[suspection.size()];
+        int c = 0;
+        for (Map.Entry<String, Float> entry : suspection.entrySet()){
+            sorted_suspicion_values[c] = (Float) entry.getValue();
+            c++;
+        }
+        Arrays.sort(sorted_suspicion_values);
+
+        for (int i=0; i<suspection.size(); i++){
+            ArrayList<String> matching_players = Util.getKeyFromValue(suspection, sorted_suspicion_values[i]);
+            for (String player : matching_players){
+                if (!trust_team.contains(player)){
+                    trust_team.add(player);
+                    if (trust_team.size() == count) break;
+                }
+            }
+            if (trust_team.size() == count) break;
+        }
+        return trust_team;
+    }
+
+    /*
+     *
+     */
+    private ArrayList<String> getNumberOfSpiesInTeam(ArrayList<String> team){
+        ArrayList<String> spyteam = new ArrayList<String>();
+        for (String player : team)
+            if (spy_list.contains(player))
+                spyteam.add(player);
+        return spyteam;
+    }
+
 }

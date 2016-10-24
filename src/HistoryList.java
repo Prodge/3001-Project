@@ -30,4 +30,5 @@ public class HistoryList<T> {
     public boolean is_empty(){
         return main.isEmpty();
     }
+
 }
