@@ -47,13 +47,13 @@ public class ExpertAgent implements Agent{
     public void get_status(String name, String players, String spies, int mission, int failures){
         this.name = name;
         this.players = new ArrayList<String>(Arrays.asList(players.split(string_delimenator)));
-        current_mission = mission - 1;
+        current_mission = mission;
         spy = spies.indexOf(name) != -1; // Checking if we are a spy
         spies = spy ? spies : "";
         spy_list = new ArrayList<String>(Arrays.asList(spies.split(string_delimenator)));
         total_failures = failures;
         total_wins = current_mission - total_failures;
-        mission_propositions_list.add(current_mission-1, current_mission_propositions);
+        mission_propositions_list.add(current_mission, current_mission_propositions);
         current_mission_propositions = new HistoryList<ArrayList<String>>();
     }
 
@@ -102,7 +102,7 @@ public class ExpertAgent implements Agent{
 
             // Otherwise add the players with the lowest number of accusations
             }else{
-                String least_accused = get_lowest_key(accusation_map);
+                String least_accused = Util.get_lowest_key(accusation_map);
                 if(!nominations.contains(least_accused)){
                     nominations.add(least_accused);
                 }
@@ -132,7 +132,7 @@ public class ExpertAgent implements Agent{
     public boolean do_Vote(){
         // As a spy, vote for all missions that include one spy
         if (spy)
-            return spy_in_team(current_mission_propositions.get_latest_value(), spy_list);
+            return Util.spy_in_team(current_mission_propositions.get_latest_value(), spy_list);
         // Always approve our own missions
         if (leader_list.get_latest_value() == name)
             return true;
@@ -140,10 +140,10 @@ public class ExpertAgent implements Agent{
         if (current_mission == 5)
             return true;
         // If there is a known spy on the team
-        if (spy_in_team(current_mission_propositions.get_latest_value(), get_suspicious_players()))
+        if (Util.spy_in_team(current_mission_propositions.get_latest_value(), get_suspicious_players()))
             return false;
         // If current team has a subset of past failed teams
-        if (is_subset_of_team(current_mission_propositions.get_latest_value(), get_failed_teams()))
+        if (Util.is_subset_of_team(current_mission_propositions.get_latest_value(), get_failed_teams()))
             return false;
         // If I'm not on the team and its a team of 3
         if (current_mission_propositions.get_latest_value().size() == 3 && !current_mission_propositions.get_latest_value().contains(name))
@@ -209,10 +209,10 @@ public class ExpertAgent implements Agent{
         // If I am a spy, accuse the most frequently previously accused non spy 50% of the time
         if(spy && Math.random() > 0.5){
             HashMap<String, Integer> accusation_map = accusations.get_accusation_map();
-            String most_accused = get_highest_key(accusation_map);
+            String most_accused = Util.get_highest_key(accusation_map);
             while(spy_list.contains(most_accused)){
                 accusation_map.remove(most_accused);
-                most_accused = get_highest_key(accusation_map);
+                most_accused = Util.get_highest_key(accusation_map);
             }
             return most_accused;
         }
@@ -233,45 +233,13 @@ public class ExpertAgent implements Agent{
         accusations.add_accusation(accuser, accused, string_delimenator);
     }
 
-    //////////////////////
-    // Helper Functions //
-    /////////////////////
+    /////////////////////////////////////////
+    // P R I V A T E    F U N C T I O N S //
+    ////////////////////////////////////////
 
-    private String get_lowest_key(HashMap<String, Integer> map){
-        String key = "";
-        int lowest_value = -1;
-        Iterator<Map.Entry<String, Integer>> it = map.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Integer> pair = it.next();
-            if(lowest_value == -1 || pair.getValue() < lowest_value){
-                key = pair.getKey();
-                lowest_value = pair.getValue();
-            }
-        }
-        return key;
-    }
-
-    private String get_highest_key(HashMap<String, Integer> map){
-        String key = "";
-        int highest_value = -1;
-        Iterator<Map.Entry<String, Integer>> it = map.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Integer> pair = it.next();
-            if(highest_value == -1 || pair.getValue() > highest_value){
-                key = pair.getKey();
-                highest_value = pair.getValue();
-            }
-        }
-        return key;
-    }
-
-    private boolean spy_in_team(ArrayList<String> team, ArrayList<String> spies){
-        for (String player : spies){
-            if (team.contains(player)) return true;
-        }
-        return false;
-    }
-
+    /*
+     *
+     */
     private ArrayList<ArrayList<String>> get_failed_teams(){
         ArrayList<ArrayList<String>> failed_teams = new ArrayList<ArrayList<String>>();
         for (int i=1; i<current_mission; i++)
@@ -280,16 +248,9 @@ public class ExpertAgent implements Agent{
         return failed_teams;
     }
 
-    private boolean is_subset_of_team(ArrayList<String> team, ArrayList<ArrayList<String>> team_list){
-        for (ArrayList<String> t : team_list){
-            ArrayList<String> match = t;
-            match.retainAll(team);
-            if (match.size() > 0)
-                return true;
-        }
-        return false;
-    }
-
+    /*
+     *
+     */
     private ArrayList<String> get_suspicious_players(){
         int min_failed_missions = 2;
         ArrayList<ArrayList<String>> failed_teams = get_failed_teams();
@@ -305,11 +266,11 @@ public class ExpertAgent implements Agent{
         // Build a list of the players ordered by most failed missions,
         // with at least 'min_failed_missions' failed missions
         ArrayList<String> suspicious_players = new ArrayList<String>();
-        String suspicious_player = get_highest_key(player_fail_map);
+        String suspicious_player = Util.get_highest_key(player_fail_map);
         while(suspicious_player != "" && player_fail_map.get(suspicious_player) >= min_failed_missions){
             suspicious_players.add(suspicious_player);
             player_fail_map.remove(suspicious_player);
-            suspicious_player = get_highest_key(player_fail_map);
+            suspicious_player = Util.get_highest_key(player_fail_map);
         }
         return suspicious_players;
     }

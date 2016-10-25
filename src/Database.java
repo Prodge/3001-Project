@@ -14,6 +14,9 @@ public class Database{
         initialise_database();
     }
 
+    /*
+     *
+     */
     private void executeCUDQuery(Connection con, String query) throws SQLException {
         Statement stmt = null;
         try {
@@ -27,44 +30,9 @@ public class Database{
         }
     }
 
-    private ArrayList<ArrayList<String>> executeSelectStandardQuery(Connection con, String query, int number_of_columns) throws SQLException {
-        ArrayList<ArrayList<String>> row_set = new ArrayList<ArrayList<String>>();
-        Statement stmt = null;
-        try {
-            stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-            while (rs.next()){
-                ArrayList<String> row = new ArrayList<String>();
-                for (int i=1; i<number_of_columns+1; i++)
-                    row.add(rs.getString(i));
-                row_set.add(row);
-            }
-        } catch (SQLException e){
-            printSQLException(e);
-        } finally{
-            if (stmt != null)
-                stmt.close();
-        }
-        return row_set;
-    }
-
-    private ArrayList<DatabaseRecord> executeSelectDatabaseRecordQuery(Connection con, String query) throws SQLException {
-        ArrayList<DatabaseRecord> row_set = new ArrayList<DatabaseRecord>();
-        Statement stmt = null;
-        try {
-            stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-            while (rs.next())
-                row_set.add(new DatabaseRecord(rs.getInt(1), ((double) rs.getInt(2) / 100), rs.getInt(3), rs.getInt(4)));
-        } catch (SQLException e){
-            printSQLException(e);
-        } finally{
-            if (stmt != null)
-                stmt.close();
-        }
-        return row_set;
-    }
-
+    /*
+     *
+     */
     private boolean database_tables_exists(Connection con) throws SQLException {
         try {
             ResultSet rs = con.getMetaData().getTables(null, null, "%", null);
@@ -110,6 +78,9 @@ public class Database{
         return is_empty;
     }
 
+    /*
+     *
+     */
     private void create_database_tables(Connection con) throws SQLException {
         try{
             String query = "";
@@ -129,6 +100,9 @@ public class Database{
         }
     }
 
+    /*
+     *
+     */
     private void populate_tables(Connection con) throws SQLException {
         try{
             String query = "";
@@ -162,6 +136,9 @@ public class Database{
         }
     }
 
+    /*
+     *
+     */
     private void set_default_last_value(String variable){
         switch (variable){
             // Default values when we have an empty database
@@ -261,6 +238,9 @@ public class Database{
         // while also making sure it spends the majority of its time in a favorable position
     }
 
+    /*
+     *
+     */
     private double get_success_ratio(DatabaseRecord row){
         return ((double) row.success / (row.fail +1));
     }
@@ -281,6 +261,9 @@ public class Database{
         return db_rec;
     }
 
+    /*
+     *
+     */
     private ArrayList<DatabaseRecord> get_table(String table){
         ArrayList<DatabaseRecord> row_set = new ArrayList<DatabaseRecord>();
         try{
