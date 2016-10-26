@@ -80,7 +80,7 @@ public class Runner {
             int round_win = runGameConfig(player_list, args[4]);
             // Save results for each player
             for (Player player : player_list)
-                player.saveResults(calculateWin(round_win, args[4], player.name));
+                player.saveResults(calculateWin(round_win, args[4], player.name), round_win);
         }
 
         // Print the number of times we won
@@ -100,6 +100,8 @@ class Player{
     public String name;
     private File file;
     private FileWriter writer;
+    private File failure_file;
+    private FileWriter failure_writer;
     private int last_game;
     private int last_score;
     public int size;
@@ -107,12 +109,15 @@ class Player{
 
     public Player(String name, int size){
         try {
-            file = new File(name + "file.txt");
+            file = new File(name + "learning_file.txt");
             file.createNewFile();
-            String[] last_line = getLastLineFromFile(name + "file.txt").split(" +");
+            failure_file = new File(name + "failure_file.txt");
+            file.createNewFile();
+            String[] last_line = getLastLineFromFile(name + "learning_file.txt").split(" +");
             last_game = Integer.valueOf(last_line[0]);
             last_score = Integer.valueOf(last_line[1]);
             writer = new FileWriter(file, true);
+            failure_writer = new FileWriter(failure_file, true);
         } catch (IOException e){
             System.out.println(e);
         }
@@ -136,13 +141,15 @@ class Player{
         return line_string;
     }
 
-    public void saveResults(int win){
+    public void saveResults(int win, int fails){
         try{
             current_wins += win;
             last_game ++;
             last_score += win == 0 ? -1 : 1;
             writer.write("" + last_game + "    " + last_score  + "\n");
             writer.flush();
+            failure_writer.write("" + last_game + "    " + fails  + "\n");
+            failure_writer.flush();
         } catch (IOException e){
             System.out.println(e);
         }
@@ -151,6 +158,7 @@ class Player{
     public void closeWriter(){
         try {
             writer.close();
+            failure_writer.close();
         } catch (IOException e){
             System.out.println(e);
         }
