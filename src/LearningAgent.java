@@ -130,13 +130,17 @@ public class LearningAgent implements Agent{
                 return false;
         }
 
+        // as resistance 1st round vote yes as nothing is known
+        if (current_mission == 1)
+            return true;
+
         // If I'm not on the team and its a team of 3 then it is likely there is a spy in the mission
         if (current_mission_propositions.get_latest_value().size() == 3 && !current_mission_propositions.get_latest_value().contains(name))
             return false;
 
         // If any players in the team have a suspicon level greater than the threshold then disapprove mission
         for (String player : current_mission_propositions.get_latest_value())
-            if (suspicious_list.get(player) > 0.1f)
+            if (suspicious_list.get(player) > 0.5f)
                 return false;
 
         return true;
@@ -278,7 +282,7 @@ public class LearningAgent implements Agent{
      **/
     private void increaseSuspicious(String player){
         if(!Objects.equals(player, name)){
-            suspicious_list.put(player, suspicious_list.get(player) + 0.35f);
+            suspicious_list.put(player, suspicious_list.get(player) + 0.5f);
         }
     }
 
@@ -308,13 +312,13 @@ public class LearningAgent implements Agent{
             // If everyone in the team sabotaged the mission then everyone is a spy
             }else if (traitors_list.get_latest_value() == players_mission_list.get_latest_value().size()){
                 for (String player : players_mission_list.get_latest_value()){
-                    suspicious_list.put(player, 10.0f);
+                    suspicious_list.put(player, 5.0f);
                 }
             // the mission was sabotaged and there were 2 in the mission and i was one of them
             }else if (players_mission_list.get_latest_value().size() == 2 && players_mission_list.get_latest_value().contains(name)){
                 ArrayList<String> other = new ArrayList<String>(players_mission_list.get_latest_value());
                 other.remove(other.indexOf(name));
-                suspicious_list.put(other.get(0), 10.0f);
+                suspicious_list.put(other.get(0), 5.0f);
             // the mission was sabotaged and we are part of a big team so dont trust the others
             }else if (players_mission_list.get_latest_value().size() > 2 && players_mission_list.get_latest_value().contains(name)){
                 ArrayList<String> other = new ArrayList<String>(players_mission_list.get_latest_value());
