@@ -1,9 +1,8 @@
 import java.util.*;
 
-
 public class LearningAgent implements Agent{
     // Constants
-    private static final String string_delimenator = "";
+    private static final String STRING_DELIMINATOR = "";
 
     // State variables
     private boolean spy;
@@ -14,7 +13,7 @@ public class LearningAgent implements Agent{
     private ArrayList<String> players;
     private ArrayList<String> spy_list;
     private HistoryList<ArrayList<String>> current_mission_propositions;
-    private HashMap<String, Float> suspection;
+    private HashMap<String, Float> suspicious_list;
 
     // History
     private AccusationList accusations;
@@ -32,17 +31,15 @@ public class LearningAgent implements Agent{
     public LearningAgent(){
         players = new ArrayList<String>();
         spy_list = new ArrayList<String>();
-        suspection = new HashMap<String, Float>();
+        suspicious_list = new HashMap<String, Float>();
         accusations = new AccusationList();
         mission_vote_list = new HistoryList<ArrayList<String>>();
         players_mission_list  = new HistoryList<ArrayList<String>>();
         traitors_list = new HistoryList<Integer>();
         leader_list = new HistoryList<String>();
         mission_propositions_list = new HistoryList<HistoryList<ArrayList<String>>>();
-
         db = new Database();
-
-        update_variables();
+        updateVariables();
     }
 
 
@@ -59,25 +56,23 @@ public class LearningAgent implements Agent{
      * */
     public void get_status(String name, String players, String spies, int mission, int failures){
         this.name = name;
-        this.players = new ArrayList<String>(Arrays.asList(players.split(string_delimenator)));
+        this.players = new ArrayList<String>(Arrays.asList(players.split(STRING_DELIMINATOR)));
         current_mission = mission;
-        spy = spies.indexOf(name) != -1; // Checking if we are a spy
+        spy = spies.indexOf(name) != -1;
         spies = spy ? spies : "";
-        spy_list = new ArrayList<String>(Arrays.asList(spies.split(string_delimenator)));
+        spy_list = new ArrayList<String>(Arrays.asList(spies.split(STRING_DELIMINATOR)));
         total_failures = failures;
-        total_wins = current_mission - total_failures;
-        mission_propositions_list.add(current_mission-1, current_mission_propositions);
-        current_mission_propositions = new HistoryList<ArrayList<String>>();
+        total_wins = current_mission - total_failures - 1;
 
         if(current_mission == 1){
-            suspection = createSuspectionList();
-        }
-
-        // If this isn't the start of the game, update the database with the results from the last round
-        if(current_mission != 1){
+            suspicious_list = createSuspiciousList();
+        }else{
+            // If this isn't the start of the game, update the database with the results from the last round
             db.update_database((spy && traitors_list.get_latest_value() > 0) || (!spy && traitors_list.get_latest_value() == 0));
-            update_variables();
+            updateVariables();
+            mission_propositions_list.add(current_mission, current_mission_propositions);
         }
+        current_mission_propositions = new HistoryList<ArrayList<String>>();
     }
 
     /**
@@ -95,8 +90,8 @@ public class LearningAgent implements Agent{
             if(Math.random() > nominate_spy_when_spy_chance){
                 nominations.add(spy_list.get((int) (Math.random() * spy_list.size())));
             }
-            for (String player : suspection.keySet()){
-                if (suspection.get(player) == 0.0f)
+            for (String player : suspicious_list.keySet()){
+                if (suspicious_list.get(player) == 0.0f)
                     nominations.add(player);
                 if (nominations.size() == number) break;
             }
@@ -114,7 +109,7 @@ public class LearningAgent implements Agent{
         leader_list.add(current_mission, leader);
         current_mission_propositions.add(
             current_mission_propositions.get_next_key(),
-            new ArrayList<String>(Arrays.asList(mission.split(string_delimenator)))
+            new ArrayList<String>(Arrays.asList(mission.split(STRING_DELIMINATOR)))
         );
     }
 
@@ -129,7 +124,7 @@ public class LearningAgent implements Agent{
 
         // As a spy only approve if there is a spy in the misssion
         if (spy){
-            if (Util.spy_in_team(current_mission_propositions.get_latest_value(), spy_list))
+            if (Util.spyInTeam(current_mission_propositions.get_latest_value(), spy_list))
                 return true;
             else
                 return false;
@@ -141,7 +136,7 @@ public class LearningAgent implements Agent{
 
         // If any players in the team have a suspicon level greater than the threshold then disapprove mission
         for (String player : current_mission_propositions.get_latest_value())
-            if (suspection.get(player) > 0.1f)
+            if (suspicious_list.get(player) > 0.1f)
                 return false;
 
         return true;
@@ -152,7 +147,7 @@ public class LearningAgent implements Agent{
      * @param yays the names of the agents who voted for the mission
      **/
     public void get_Votes(String yays){
-        mission_vote_list.add(current_mission, new ArrayList<String>(Arrays.asList(yays.split(string_delimenator))));
+        mission_vote_list.add(current_mission, new ArrayList<String>(Arrays.asList(yays.split(STRING_DELIMINATOR))));
     }
 
     /**
@@ -161,7 +156,7 @@ public class LearningAgent implements Agent{
      * @param mission the Agents being sent on a mission
      **/
     public void get_Mission(String mission){
-        players_mission_list.add(current_mission, new ArrayList<String>(Arrays.asList(mission.split(string_delimenator))));
+        players_mission_list.add(current_mission, new ArrayList<String>(Arrays.asList(mission.split(STRING_DELIMINATOR))));
     }
 
     /**
@@ -179,7 +174,7 @@ public class LearningAgent implements Agent{
         if(mission_size == 1)
             return false;
 
-        ArrayList<String> spyteam = getNumberOfSpiesInTeam(players_mission_list.get_latest_value());
+        ArrayList<String> spyteam = getSpiesInTeam(players_mission_list.get_latest_value());
 
         // When spy, if have already failed 2 missions then betray to win the game
         if (total_failures == 2)
@@ -199,7 +194,7 @@ public class LearningAgent implements Agent{
      **/
     public void get_Traitors(int traitors){
         traitors_list.add(current_mission, traitors);
-        adjustSuspectionList();
+        adjustSuspiciousList();
     }
 
     /**
@@ -213,10 +208,10 @@ public class LearningAgent implements Agent{
         // If I am a spy, accuse the most frequently previously accused non spy 50% of the time
         if(spy && Math.random() > accuse_as_spy_chance){
             HashMap<String, Integer> accusation_map = accusations.get_accusation_map();
-            String most_accused = Util.get_highest_key(accusation_map);
+            String most_accused = Util.getHighestKey(accusation_map);
             while(spy_list.contains(most_accused)){
                 accusation_map.remove(most_accused);
-                most_accused = Util.get_highest_key(accusation_map);
+                most_accused = Util.getHighestKey(accusation_map);
             }
             return most_accused;
         }
@@ -234,26 +229,27 @@ public class LearningAgent implements Agent{
      * @param accused the names of the Agents being Accused, concatenated in a String.
      * */
     public void get_Accusation(String accuser, String accused){
-        accusations.add_accusation(accuser, accused, string_delimenator);
+        accusations.add_accusation(accuser, accused, STRING_DELIMINATOR);
     }
 
     /////////////////////////////////////////
     // P R I V A T E    F U N C T I O N S //
     ////////////////////////////////////////
 
-    /*
-     *
-     */
-    private void update_variables(){
+    /**
+     * This method gets the most optimal value from the database for chance variables
+     **/
+    private void updateVariables(){
         accuse_as_spy_chance = db.get_new_value("accuse_as_spy_chance");
         betray_base_factor = db.get_new_value("betray_base_factor");
         nominate_spy_when_spy_chance = db.get_new_value("nominate_spy_when_spy_chance");
     }
 
-    /*
-     * Create list of suspicous people
-     */
-    private HashMap<String, Float> createSuspectionList(){
+    /**
+     * Create and return initial list of suspicious players
+     * @return hash map of suspicious players with player to level of suspiciousness
+     **/
+    private HashMap<String, Float> createSuspiciousList(){
         HashMap<String, Float> slist = new HashMap<String, Float>();
         if (spy) {
             // As a spy i know everything
@@ -277,79 +273,80 @@ public class LearningAgent implements Agent{
         return slist;
     }
 
-    /*
-     * Increase suspection of player
-     */
-    private void increaseSuspection(String player){
+    /**
+     * Increase suspiciousness of a given player
+     **/
+    private void increaseSuspicious(String player){
         if(!Objects.equals(player, name)){
-            suspection.put(player, suspection.get(player) + 0.35f);
+            suspicious_list.put(player, suspicious_list.get(player) + 0.35f);
         }
     }
 
-    /*
-     * Decrease suspection of player
-     */
-    private void decreaseSuspection(String player){
+    /**
+     * Decrease suspiciousness of a given player
+     **/
+    private void decreaseSuspicious(String player){
         if(!Objects.equals(player, name)){
-            suspection.put(player, suspection.get(player) - 0.25f);
-            if (suspection.get(player) < 0.0f){
-                suspection.put(player, 0.0f);
+            suspicious_list.put(player, suspicious_list.get(player) - 0.25f);
+            if (suspicious_list.get(player) < 0.0f){
+                suspicious_list.put(player, 0.0f);
             }
         }
     }
 
-    /*
-     * Adjust way I think about other players
-     */
-    private void adjustSuspectionList(){
+    /**
+     * This method is to be called at the end of round to adjust the suspicousness levels of each player according to mission results
+     **/
+    private void adjustSuspiciousList(){
         // If spy don't do anything as everything is known
         if (!spy){
             // If mission was not sabtoaged then increase trust
             if (traitors_list.get_latest_value() == 0){
                 for (String player : players_mission_list.get_latest_value()){
-                    decreaseSuspection(player);
+                    decreaseSuspicious(player);
                 }
             // If everyone in the team sabotaged the mission then everyone is a spy
             }else if (traitors_list.get_latest_value() == players_mission_list.get_latest_value().size()){
                 for (String player : players_mission_list.get_latest_value()){
-                    suspection.put(player, 10.0f);
+                    suspicious_list.put(player, 10.0f);
                 }
             // the mission was sabotaged and there were 2 in the mission and i was one of them
             }else if (players_mission_list.get_latest_value().size() == 2 && players_mission_list.get_latest_value().contains(name)){
                 ArrayList<String> other = new ArrayList<String>(players_mission_list.get_latest_value());
                 other.remove(other.indexOf(name));
-                suspection.put(other.get(0), 10.0f);
+                suspicious_list.put(other.get(0), 10.0f);
             // the mission was sabotaged and we are part of a big team so dont trust the others
             }else if (players_mission_list.get_latest_value().size() > 2 && players_mission_list.get_latest_value().contains(name)){
                 ArrayList<String> other = new ArrayList<String>(players_mission_list.get_latest_value());
                 other.remove(other.indexOf(name));
                 for (String player : other){
-                    increaseSuspection(player);
+                    increaseSuspicious(player);
                 }
             }
             // Misssion was sabotaged and we dont know who went so dont trust anyone
             for (String player : players_mission_list.get_latest_value()){
-                increaseSuspection(player);
+                increaseSuspicious(player);
             }
         }
     }
 
-    /*
-     *
-     */
+    /**
+     * This method given the number of players wanted returns the players with the least suspicioiusness levels
+     * @return list of players who are most trusted
+     **/
     private ArrayList<String> getMostTrustableTeam(int count){
         ArrayList<String> trust_team = new ArrayList<String>();
 
-        float[] sorted_suspicion_values = new float[suspection.size()];
+        float[] sorted_suspicion_values = new float[suspicious_list.size()];
         int c = 0;
-        for (Map.Entry<String, Float> entry : suspection.entrySet()){
+        for (Map.Entry<String, Float> entry : suspicious_list.entrySet()){
             sorted_suspicion_values[c] = (Float) entry.getValue();
             c++;
         }
         Arrays.sort(sorted_suspicion_values);
 
-        for (int i=0; i<suspection.size(); i++){
-            ArrayList<String> matching_players = Util.getKeyFromValue(suspection, sorted_suspicion_values[i]);
+        for (int i=0; i<suspicious_list.size(); i++){
+            ArrayList<String> matching_players = Util.getKeyFromValue(suspicious_list, sorted_suspicion_values[i]);
             for (String player : matching_players){
                 if (!trust_team.contains(player)){
                     trust_team.add(player);
@@ -361,10 +358,11 @@ public class LearningAgent implements Agent{
         return trust_team;
     }
 
-    /*
-     *
-     */
-    private ArrayList<String> getNumberOfSpiesInTeam(ArrayList<String> team){
+    /**
+     * This method given a team of players returns the spies in that team
+     * @return list of spies in the team
+     **/
+    private ArrayList<String> getSpiesInTeam(ArrayList<String> team){
         ArrayList<String> spyteam = new ArrayList<String>();
         for (String player : team)
             if (spy_list.contains(player))

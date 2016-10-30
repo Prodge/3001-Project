@@ -7,7 +7,7 @@ public class HistoryList<T> {
 
     public HistoryList(){
         main = new HashMap<Integer, T>();
-        last_key = 0;
+        last_key = -1;
     }
 
     public void add(int k, T s){
