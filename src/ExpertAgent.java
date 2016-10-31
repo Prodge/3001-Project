@@ -1,5 +1,10 @@
 import java.util.*;
 
+/**
+ * This is an implementation of an Agent with expert rules
+ *
+ * @author Tim Metcalf (21515553) and Don Wimodya Randula Athukorala (21440859)
+ */
 public class ExpertAgent implements Agent{
     // Constants
     private static final String STRING_DELIMINATOR = "";

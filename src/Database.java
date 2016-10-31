@@ -1,6 +1,12 @@
 import java.util.*;
 import java.sql.*;
 
+/**
+ * The Database class creates/connects to a database storing factors of certain events
+ * This is used for the LearningAgent
+ *
+ * @author Tim Metcalf (21515553) and Don Wimodya Randula Athukorala (21440859)
+ */
 public class Database{
     private String database_name = "history.db";
     private List<String> tables = Arrays.asList("accuse_as_spy_chance", "betray_base_factor", "nominate_spy_when_spy_chance");
@@ -14,8 +20,8 @@ public class Database{
         initialise_database();
     }
 
-    /*
-     *
+    /**
+     * Executes a create/updated queries
      */
     private void executeCUDQuery(Connection con, String query) throws SQLException {
         Statement stmt = null;
@@ -30,8 +36,9 @@ public class Database{
         }
     }
 
-    /*
-     *
+    /**
+     * Checks whether the required tables exists in the database
+     * @return true if required tables exists otherwise return false
      */
     private boolean database_tables_exists(Connection con) throws SQLException {
         try {
@@ -50,8 +57,8 @@ public class Database{
     }
 
     /**
-     * @return true if the database is empty
      * The database is considered empty when all values are 0 zeros
+     * @return true if the database is empty
      */
     public boolean empty_database(){
         boolean is_empty = false;
@@ -78,8 +85,8 @@ public class Database{
         return is_empty;
     }
 
-    /*
-     *
+    /**
+     * Creates the required tables for the database
      */
     private void create_database_tables(Connection con) throws SQLException {
         try{
@@ -100,8 +107,8 @@ public class Database{
         }
     }
 
-    /*
-     *
+    /**
+     * Add initial values to the required tables
      */
     private void populate_tables(Connection con) throws SQLException {
         try{
@@ -136,8 +143,8 @@ public class Database{
         }
     }
 
-    /*
-     *
+    /**
+     * Set default values for a given variable in the database
      */
     private void set_default_last_value(String variable){
         switch (variable){
@@ -238,15 +245,17 @@ public class Database{
         // while also making sure it spends the majority of its time in a favorable position
     }
 
-    /*
-     *
+    /**
+     * Get the sucess ratio a given database row
+     * @return the success ratio
      */
     private double get_success_ratio(DatabaseRecord row){
         return ((double) row.success / (row.fail +1));
     }
 
     /**
-     *Returns the DatabaseRecord of the highest success ratio in the given table
+     * Returns the DatabaseRecord of the highest success ratio in the given table
+     * @return the row with the highest success ratio
      */
     private DatabaseRecord get_highest_success_ratio(ArrayList<DatabaseRecord> rows){
         double current_max = 0;
@@ -261,8 +270,9 @@ public class Database{
         return db_rec;
     }
 
-    /*
-     *
+    /**
+     * Get all rows in a table
+     * @return list of rows in a table
      */
     private ArrayList<DatabaseRecord> get_table(String table){
         ArrayList<DatabaseRecord> row_set = new ArrayList<DatabaseRecord>();
@@ -391,6 +401,9 @@ public class Database{
 
 }
 
+/**
+ * This is a private class that holds a row in the database
+ */
 class DatabaseRecord {
     public int id;
     public double value;

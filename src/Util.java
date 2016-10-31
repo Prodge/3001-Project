@@ -1,5 +1,10 @@
 import java.util.*;
 
+/**
+ * This class contains helper methods which are used in other classes
+ *
+ * @author Tim Metcalf (21515553) and Don Wimodya Randula Athukorala (21440859)
+ */
 public class Util {
 
     /**
