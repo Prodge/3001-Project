@@ -1,0 +1,5 @@
+set title "Game Performance"
+set xlabel "Game #"
+set ylabel "# of Fails"
+filelist = system("ls *_game_performance.txt")
+plot for [filename in filelist] filename using 1:2 title filename with points pointtype 5
