@@ -70,7 +70,7 @@ public class LearningAgent implements Agent{
             // If this isn't the start of the game, update the database with the results from the last round
             db.update_database((spy && traitors_list.get_latest_value() > 0) || (!spy && traitors_list.get_latest_value() == 0));
             updateVariables();
-            mission_propositions_list.add(current_mission, current_mission_propositions);
+            mission_propositions_list.add(current_mission-1, current_mission_propositions);
         }
         current_mission_propositions = new HistoryList<ArrayList<String>>();
     }

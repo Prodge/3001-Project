@@ -1,0 +1,5 @@
+set title "Net Win Graph"
+set xlabel "Game #"
+set ylabel "Net Win"
+filelist = system("ls class/*net_win.txt")
+plot for [filename in filelist] filename using 1:2 title filename with lines

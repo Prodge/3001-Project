@@ -21,3 +21,9 @@ clean:
 clean-other-files:
 	rm -rf $(OUTPUT_DIR)/*file.txt
 	rm -rf $(OUTPUT_DIR)/*.db
+
+graph-net-win:
+	gnuplot -p graph_net_win.plg
+
+graph-game-mission-failures:
+	gnuplot -p graph_game_mission_failures.plg

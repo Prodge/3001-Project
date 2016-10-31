@@ -80,7 +80,7 @@ public class Runner {
             int round_win = runGameConfig(player_list, args[4]);
             // Save results for each player
             for (Player player : player_list)
-                player.saveResults(calculateWin(round_win, args[4], player.name), round_win);
+                player.saveResults(calculateWin(round_win, args[4], player.name), Objects.equals(args[4], player.name) ? round_win : 5-round_win);
         }
 
         // Print the number of times we won
@@ -98,33 +98,32 @@ public class Runner {
 class Player{
 
     public String name;
-    private File file;
-    private FileWriter writer;
-    private File failure_file;
-    private FileWriter failure_writer;
+    private File net_win_file;
+    private FileWriter net_win_writer;
+    private File game_performance_file;
+    private FileWriter game_performance_writer;
     private int last_game;
     private int last_score;
     public int size;
     public int current_wins;
 
     public Player(String name, int size){
+        this.name = name;
+        this.size = size;
+        current_wins = 0;
         try {
-            file = new File(name + "learning_file.txt");
-            file.createNewFile();
-            failure_file = new File(name + "failure_file.txt");
-            file.createNewFile();
-            String[] last_line = getLastLineFromFile(name + "learning_file.txt").split(" +");
+            net_win_file = new File(name + "_net_win.txt");
+            net_win_file.createNewFile();
+            game_performance_file = new File(name + "_game_performance.txt");
+            game_performance_file.createNewFile();
+            String[] last_line = getLastLineFromFile(name + "_net_win.txt").split(" +");
             last_game = Integer.valueOf(last_line[0]);
             last_score = Integer.valueOf(last_line[1]);
-            writer = new FileWriter(file, true);
-            failure_writer = new FileWriter(failure_file, true);
+            net_win_writer = new FileWriter(net_win_file, true);
+            game_performance_writer = new FileWriter(game_performance_file, true);
         } catch (IOException e){
             System.out.println(e);
         }
-        this.name = name;
-        this.file = file;
-        this.size = size;
-        current_wins = 0;
     }
 
     private String getLastLineFromFile(String file_name){
@@ -146,10 +145,10 @@ class Player{
             current_wins += win;
             last_game ++;
             last_score += win == 0 ? -1 : 1;
-            writer.write("" + last_game + "    " + last_score  + "\n");
-            writer.flush();
-            failure_writer.write("" + last_game + "    " + fails  + "\n");
-            failure_writer.flush();
+            net_win_writer.write("" + last_game + "    " + last_score  + "\n");
+            net_win_writer.flush();
+            game_performance_writer.write("" + last_game + "    " + fails  + "\n");
+            game_performance_writer.flush();
         } catch (IOException e){
             System.out.println(e);
         }
@@ -157,8 +156,8 @@ class Player{
 
     public void closeWriter(){
         try {
-            writer.close();
-            failure_writer.close();
+            net_win_writer.close();
+            game_performance_writer.close();
         } catch (IOException e){
             System.out.println(e);
         }
